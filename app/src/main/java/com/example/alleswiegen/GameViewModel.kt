@@ -540,6 +540,11 @@ class GameViewModel (private val repository: PlayerScoreRepository) : ViewModel(
 
         )}
     }
+    fun updatePlayerScore(score: PlayerScoreEntry) {
+        viewModelScope.launch {
+            repository.update(score)
+        }
+    }
     fun updatePersonalTargetAfterExxen(weight: Int?) {
         if (weight!=null){
             var playersToSave: List<Player>? = null

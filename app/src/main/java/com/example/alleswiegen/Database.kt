@@ -72,7 +72,8 @@ interface PlayerScoreDao {
 
     @Query("SELECT * FROM events ORDER BY startTimestamp ASC")
     fun getAllEvents(): Flow<List<EventEntry>>
-
+    @androidx.room.Update
+    suspend fun updateScore(score: PlayerScoreEntry)
     @Query("DELETE FROM events WHERE id = :eventId")
     suspend fun deleteEvent(eventId: Long)
 }
@@ -113,7 +114,7 @@ class PlayerScoreRepository(private val dao: PlayerScoreDao) {
     val allScores: Flow<List<PlayerScoreEntry>> = dao.getAllScores()
     //val allEvents: Flow<List<EventEntry>> = dao.getAllEvents()
     suspend fun upsertEvent(event: EventEntry) = dao.upsertEvent(event)
-
+    suspend fun update(score: PlayerScoreEntry) = dao.updateScore(score)
 
     suspend fun insert(score: PlayerScoreEntry) {
         dao.insertScore(score)

@@ -31,6 +31,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -47,11 +48,14 @@ import androidx.compose.ui.geometry.isEmpty
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 
 import com.example.alleswiegen.GameUiState
 import com.example.alleswiegen.GameViewModel
 import com.example.alleswiegen.PlayerScoreEntry
 import com.example.alleswiegen.Screen
+import com.example.alleswiegen.components.EditGameScreen
 import java.text.SimpleDateFormat
 import kotlin.text.format
 import kotlin.text.groupBy
@@ -115,13 +119,26 @@ fun AllEvents(
         }
     }
     if (showEditWindow != null) {
-        // This is your "For now empty edit window"
-        AlertDialog(
+        val selectedTimestamp = showEditWindow!!
+        val playersInGame = groupedGames[selectedTimestamp] ?: emptyList()
+
+        // You can use a Basic Dialog or a Fullscreen Surface
+        Dialog(
             onDismissRequest = { showEditWindow = null },
-            confirmButton = { TextButton(onClick = { showEditWindow = null }) { Text("OK") } },
-            title = { Text("Details für Spiel") },
-            text = { Text("Hier werden Details für den Zeitstempel $showEditWindow angezeigt.") }
-        )
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            Surface(
+                modifier = Modifier.fillMaxSize(),
+                color = MaterialTheme.colorScheme.background
+            ) {
+                EditGameScreen(
+                    timestamp = selectedTimestamp,
+                    players = playersInGame,
+                    onDismiss = { showEditWindow = null },
+                    viewModel = viewModel
+                )
+            }
+        }
     }
 }
 
