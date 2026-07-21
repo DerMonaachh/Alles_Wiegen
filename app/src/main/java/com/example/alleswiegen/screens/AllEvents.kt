@@ -3,6 +3,7 @@ package com.example.alleswiegen.screens
 import android.annotation.SuppressLint
 import androidx.compose.animation.core.copy
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -56,6 +57,7 @@ import com.example.alleswiegen.GameViewModel
 import com.example.alleswiegen.PlayerScoreEntry
 import com.example.alleswiegen.Screen
 import com.example.alleswiegen.components.EditGameScreen
+import com.example.alleswiegen.components.QrCodeDialog
 import java.text.SimpleDateFormat
 import kotlin.text.format
 import kotlin.text.groupBy
@@ -70,6 +72,7 @@ fun AllEvents(
     // Collecting the filtered scores from the flow you provided
     val scores by viewModel.filteredScores.collectAsState()
     var showEditWindow by remember { mutableStateOf<Long?>(null) }
+    var showQRWindow by remember { mutableStateOf<Long?>(null) }
 
     // Grouping scores by timestamp to represent unique games
     // We sort keys descending to show the newest games first
@@ -112,7 +115,8 @@ fun AllEvents(
                     GameHistoryCard(
                         timestamp = timestamp,
                         players = playersInGame,
-                        onClick = { showEditWindow = timestamp }
+                        onClick = { showEditWindow = timestamp },
+                        onLongClick = {showQRWindow=timestamp}
                     )
                 }
             }
@@ -140,6 +144,12 @@ fun AllEvents(
             }
         }
     }
+    if (showQRWindow != null) {
+        val selectedTimestamp = showQRWindow!!
+        val playersInGame = groupedGames[selectedTimestamp] ?: emptyList()
+        QrCodeDialog(csvData = viewModel.generateCsvForQrFromDB(playersInGame), onDismiss = { showQRWindow = null })
+    }
+
 }
 
 @SuppressLint("SimpleDateFormat")
@@ -147,7 +157,8 @@ fun AllEvents(
 fun GameHistoryCard(
     timestamp: Long,
     players: List<PlayerScoreEntry>,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onLongClick: () -> Unit = {}
 ) {
     // Format the date/time
     val formattedDate = remember(timestamp) {
@@ -158,8 +169,9 @@ fun GameHistoryCard(
 
     Card(
         modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() },
+            .fillMaxWidth().combinedClickable(onClick = onClick,
+                onLongClick = onLongClick)
+           ,
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)

@@ -29,6 +29,7 @@ import com.google.zxing.BarcodeFormat
 import com.google.zxing.qrcode.QRCodeWriter
 import androidx.core.graphics.set
 import androidx.core.graphics.createBitmap
+import com.example.alleswiegen.components.QrCodeDialog
 
 // Enum für die verschiedenen Ranking-Modi
 enum class RankingMode(val title: String) {
@@ -192,73 +193,3 @@ fun RankingScreen(viewModel: GameViewModel, uiState: GameUiState) {
     }
 }
 
-
-@Composable
-fun QrCodeDialog(csvData: String, onDismiss: () -> Unit) {
-    val bitmap = remember(csvData) { generateQrBitmap(csvData) }
-
-    Dialog(onDismissRequest = onDismiss) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            shape = MaterialTheme.shapes.large
-        ) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text("Ranking QR Code", style = MaterialTheme.typography.titleMedium)
-                Spacer(modifier = Modifier.height(16.dp))
-
-                bitmap?.let {
-                    Image(
-                        bitmap = it.asImageBitmap(),
-                        contentDescription = "QR Code",
-                        modifier = Modifier.size(250.dp)
-                    )
-                } ?: Text("QR Code konnte nicht erstellt werden (Daten zu groß?)")
-
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = csvData,
-                    style = MaterialTheme.typography.bodySmall,
-                    maxLines = 3,
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                TextButton(onClick = onDismiss) {
-                    Text("Schließen")
-                }
-            }
-        }
-    }
-}
-
-fun generateQrBitmap(content: String): Bitmap? {
-    return try {
-        val writer = QRCodeWriter()
-        // Wir nutzen hier eine etwas kleinere Auflösung (512x512)
-        val bitMatrix = writer.encode(content, BarcodeFormat.QR_CODE, 512, 512)
-        val width = bitMatrix.width
-        val height = bitMatrix.height
-
-        val bitmap = createBitmap(width, height, Bitmap.Config.RGB_565)
-
-        for (x in 0 until width) {
-            for (y in 0 until height) {
-                // bitMatrix.get(x, y) ist true, wenn der Pixel schwarz sein soll
-                val color = if (bitMatrix.get(x, y)) {
-                    android.graphics.Color.BLACK
-                } else {
-                    android.graphics.Color.WHITE
-                }
-                bitmap[x, y] = color
-            }
-        }
-        bitmap
-    } catch (e: Exception) {
-        e.printStackTrace()
-        null
-    }
-}

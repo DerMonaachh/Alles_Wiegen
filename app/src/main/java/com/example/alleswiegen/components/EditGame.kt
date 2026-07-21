@@ -48,6 +48,7 @@ fun EditGameScreen(
     // Local state to track changes before saving
     var editedPlayers by remember(players) { mutableStateOf(players) }
 
+
     val formattedDate = remember(timestamp) {
         SimpleDateFormat("dd. MMMM yyyy, HH:mm", Locale.getDefault()).format(Date(timestamp))
     }

@@ -382,6 +382,38 @@ class GameViewModel (private val repository: PlayerScoreRepository) : ViewModel(
         }
         return sb.toString()
     }
+    @SuppressLint("DefaultLocale")
+    fun generateCsvForQrFromDB(players:List<PlayerScoreEntry>): String {
+        if (players.isEmpty()) {return ""}
+        else {
+            val sb = StringBuilder()
+            val time =players[0].timestamp
+
+
+
+        // Optional: Add Header (removes ambiguity but takes up space)
+        sb.append("time, ${time}\n")
+        sb.append("Name,ErrClas,RegEx,AvgErr,Rank,ExRank,Sips,SipswoEx,Time,Bagels\n")
+
+        players.forEach { player ->
+            val data = listOf(
+                player.name,
+                player.totalErrorClassic,
+                player.totalErrorWithoutExer,
+                String.format("%.2f", player.averageError), // Formatting to 2 decimals to save space
+                player.classicPosition,
+                player.withoutExerPosition,
+                player.sipCount,
+                player.sipCountWithoutExer,
+                player.bagelCount
+            )
+            sb.append(data.joinToString(separator = ","))
+            sb.append("\n") // New line for next player
+        }
+        return sb.toString()
+        }
+    }
+
 
     fun parseCsvFromQr(csvData: String): String {//TODO verhindern, dass Daten doppelt eingelesen ewrden
         val lines = csvData.trim().lines()
@@ -544,6 +576,23 @@ class GameViewModel (private val repository: PlayerScoreRepository) : ViewModel(
         viewModelScope.launch {
             repository.update(score)
         }
+    }
+
+    // Inside GameViewModel.kt
+// Function to save the current name and address to SharedPreferences
+    fun saveScale(context: Context, name: String, address: String) {
+        val sharedPref = context.getSharedPreferences("SavedScales", Context.MODE_PRIVATE)
+        sharedPref.edit {
+            putString(name, address)
+        }
+    }
+
+    fun getSavedScales(context: Context): Map<String, String> {
+        val sharedPref = context.getSharedPreferences("SavedScales", Context.MODE_PRIVATE)
+        val allEntries = sharedPref.all ?: return emptyMap()
+
+        // Filter only those entries where the value is actually a String
+        return allEntries.filterValues { it is String } as Map<String, String>
     }
     fun updatePersonalTargetAfterExxen(weight: Int?) {
         if (weight!=null){
