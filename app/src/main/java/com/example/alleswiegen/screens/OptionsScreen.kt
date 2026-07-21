@@ -2,6 +2,7 @@ package com.example.alleswiegen.screens
 
 import android.content.Context
 import android.content.Intent
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
@@ -10,17 +11,19 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -31,21 +34,21 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.room.paging.util.queryDatabase
 import com.example.alleswiegen.GameUiState
 import com.example.alleswiegen.GameViewModel
-import com.example.alleswiegen.PlayerScoreEntry
 import com.example.alleswiegen.Screen
 
 @Composable
@@ -54,6 +57,8 @@ fun OptionsScreen(viewModel: GameViewModel, uiState: GameUiState) {
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     val tabTitles = listOf("Bluetooth Optionen", "Spiel Optionen", "Allgemeines")
     val context = LocalContext.current
+
+
     Column(modifier = Modifier.fillMaxWidth()) {
         // Die Material 3 Tab-Leiste
         TabRow(selectedTabIndex = selectedTabIndex) {
@@ -95,52 +100,135 @@ fun OptionsScreen(viewModel: GameViewModel, uiState: GameUiState) {
     }
 }
 
+// ... other imports
 @Composable
-fun BluetoothOptions(viewModel: GameViewModel, uiState: GameUiState,context: Context) {
+fun BluetoothOptions(viewModel: GameViewModel, uiState: GameUiState, context: Context) {
+    // Local state for the Scale Name input and Dropdown control
+    var scaleName by remember { mutableStateOf("") }
+    var expanded by remember { mutableStateOf(false) }
+    val savedScales = remember { mutableStateMapOf<String, String>() }
+
+    // Initial load of saved scales
+    LaunchedEffect(Unit) {
+        savedScales.putAll(viewModel.getSavedScales(context))
+    }
+
     Column {
         Text(
             text = "Bluetooth Optionen",
             style = MaterialTheme.typography.headlineSmall,
             modifier = Modifier.padding(bottom = 8.dp)
         )
-        Column {
-            OutlinedTextField(
-                value = uiState.bluetoothAddress,
-                onValueChange = { newAddr ->
-                    viewModel.updateBluetoothAddress(context, newAddr)
-                },
-                label = { Text("Bluetooth MAC-Adresse") },
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(Modifier.height(16.dp))
-            OutlinedTextField(
-                value = uiState.SERVICE_UUID,
-                onValueChange = { newUUID ->
-                    // Beachte: Hier solltest du evtl. viewModel.updateServiceUuid nutzen,
-                    // falls du verschiedene Funktionen für die UUIDs hast
-                    viewModel.updateBluetoothServiceUuid(context, newUUID)
-                },
-                label = { Text("SERVICE_UUID") },
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(Modifier.height(16.dp))
-            OutlinedTextField(
-                value = uiState.CHARACTERISTIC_UUID,
-                onValueChange = { newUUID ->
-                    viewModel.updatecharUudi(context, newUUID)
-                },
-                label = { Text("CHARACTERISTIC_UUID") },
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(Modifier.height(16.dp))
 
-            Text(
-                text = "Rohdaten (Hex): ${viewModel.rawDataString}",
-                style = MaterialTheme.typography.bodySmall,
-                color = Color.Gray,
-                modifier = Modifier.padding(8.dp)
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(
+                    alpha = 0.3f
+                )
             )
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                // --- NEW: Waagen Name Field ---
+                OutlinedTextField(
+                    value = scaleName,
+                    onValueChange = { scaleName = it },
+                    label = { Text("Waagen Name") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
+                )
+
+                Spacer(Modifier.height(8.dp))
+
+                // --- NEW: Buttons Row ---
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Button(
+                        onClick = {
+                            if (scaleName.isNotBlank() && uiState.bluetoothAddress.isNotBlank()) {
+                                viewModel.saveScale(context, scaleName, uiState.bluetoothAddress)
+                                savedScales[scaleName] =
+                                    uiState.bluetoothAddress // Update local list
+                            }
+                            Toast.makeText(
+                                context,
+                                "${scaleName} mit Adresse ${uiState.bluetoothAddress} gespeichert.",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("Speichern", style = MaterialTheme.typography.labelSmall)
+                    }
+
+                    Box(modifier = Modifier.weight(1f)) {
+                        Button(
+                            onClick = { expanded = true },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("Laden", style = MaterialTheme.typography.labelSmall)
+                            Icon(Icons.Default.ArrowDropDown, contentDescription = null)
+                        }
+
+                        DropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false },
+                            modifier = Modifier.fillMaxWidth(0.5f)
+                        ) {
+                            if (savedScales.isEmpty()) {
+                                DropdownMenuItem(
+                                    text = { Text("Keine gespeicherten Waagen") },
+                                    onClick = { expanded = false }
+                                )
+                            }
+                            savedScales.forEach { (name, address) ->
+                                DropdownMenuItem(
+                                    text = { Text(name) },
+                                    onClick = {
+                                        scaleName = name
+                                        viewModel.updateBluetoothAddress(context, address)
+                                        expanded = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+            }
         }
+
+        Spacer(Modifier.height(16.dp))
+
+        // Existing Address Field
+        OutlinedTextField(
+            value = uiState.bluetoothAddress,
+            onValueChange = { newAddr ->
+                viewModel.updateBluetoothAddress(context, newAddr)
+            },
+            label = { Text("Bluetooth MAC-Adresse") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        // ... existing UUID fields and Rohdaten text ...
+        Spacer(Modifier.height(16.dp))
+        OutlinedTextField(
+            value = uiState.SERVICE_UUID,
+            onValueChange = { viewModel.updateBluetoothServiceUuid(context, it) },
+            label = { Text("SERVICE_UUID") },
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(Modifier.height(16.dp))
+        OutlinedTextField(
+            value = uiState.CHARACTERISTIC_UUID,
+            onValueChange = { viewModel.updatecharUudi(context, it) },
+            label = { Text("CHARACTERISTIC_UUID") },
+            modifier = Modifier.fillMaxWidth()
+        )
+        // ... raw data string ...
     }
 }
 
@@ -268,7 +356,7 @@ fun GameOptions(viewModel: GameViewModel, uiState: GameUiState,context: Context)
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(8.dp))
-                        .clickable { viewModel.toggleJingle(!uiState.showJingle,context) }
+                        .clickable { viewModel.toggleJingle(!uiState.showJingle, context) }
                         .padding(vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
@@ -339,7 +427,7 @@ fun GeneralOptions(viewModel: GameViewModel, uiState: GameUiState) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(8.dp))
-                        .clickable { viewModel.toggleVibration(!uiState.vibrate,context) }
+                        .clickable { viewModel.toggleVibration(!uiState.vibrate, context) }
                         .padding(vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
