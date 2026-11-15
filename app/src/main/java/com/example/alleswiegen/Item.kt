@@ -36,7 +36,7 @@ object AvailableItems {
             name = "Wein Panzer",
             imageRes = R.drawable.wein, // Platzhalter
             rarity = 2,
-            wert = 15,
+            wert = 5,
             beschreibung = "Wähle einen Spieler aus der einen zusätzlichen Fehler von %wert% bekommt.",
             target=true
         ),
@@ -45,7 +45,7 @@ object AvailableItems {
             name = "Blue Shell",
             imageRes = R.drawable.blue, // Platzhalter
             rarity = 3,
-            wert = 15,
+            wert = 5,
             multiplikator = 1.5,
             beschreibung = "Der Fehler des Führenden wird beim nächsten mal ver %multi%-facht und er bekommt sofort einen zusätzlichen Fehler von %wert%.",
 
@@ -62,7 +62,7 @@ object AvailableItems {
             name = "Blitz",
             imageRes = R.drawable.blitz, // Platzhalter
             rarity = 3,
-            wert=10,
+            wert=5,
             beschreibung = "Alle anderen Spieler bekommen einen zusätzlichen Fehler von %wert%."
         ),
         Item(
