@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Alles Wiegen – Dokumentation</title>
+  
+  <!-- AstroPaper Typografie: IBM Plex Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+
+  <style>
+    /* AstroPaper Farbvariablen (Light & Dark Mode) */
+    :root,
+    html[data-theme="light"] {
+      --color-fill: #fbfbfb;
+      --color-text-base: #282728;
+      --color-accent: #006cac;
+      --color-card: #e6e6e6;
+      --color-card-muted: #cccccc;
+      --color-border: #ece9e9;
+    }
+
+    html[data-theme="dark"] {
+      --color-fill: #212737;
+      --color-text-base: #eaedf3;
+      --color-accent: #ff6b01;
+      --color-card: #343f60;
+      --color-card-muted: #8a3302;
+      --color-border: #ab4b08;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      font-family: 'IBM Plex Mono', monospace;
+      background-color: var(--color-fill);
+      color: var(--color-text-base);
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    body {
+      max-width: 48rem; /* 768px - typische AstroPaper Lesebreite */
+      margin: 0 auto;
+      padding: 0 1.25rem 4rem 1.25rem;
+      line-height: 1.75;
+      font-size: 1rem;
+    }
+
+    /* Header & Navigation */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.75rem 0;
+      border-bottom: 1px dashed var(--color-border);
+    }
+
+    .site-title {
+      font-size: 1.35rem;
+      font-weight: 700;
+      text-decoration: none;
+      color: var(--color-text-base);
+      letter-spacing: -0.02em;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+    }
+
+    .nav-actions a {
+      color: var(--color-text-base);
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+
+    .nav-actions a:hover {
+      color: var(--color-accent);
+    }
+
+    /* Theme Toggle Button */
+    #theme-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--color-text-base);
+      display: flex;
+      align-items: center;
+      padding: 0.25rem;
+    }
+
+    #theme-btn:hover {
+      color: var(--color-accent);
+    }
+
+    /* Hero / Titelbereich */
+    .hero {
+      padding: 2.5rem 0 2rem 0;
+      border-bottom: 1px dashed var(--color-border);
+    }
+
+    .hero h1 {
+      font-size: 2.25rem;
+      font-weight: 700;
+      color: var(--color-accent);
+      margin-bottom: 0.75rem;
+      line-height: 1.2;
+    }
+
+    .hero p {
+      opacity: 0.85;
+    }
+
+    /* Inhaltsverzeichnis (AstroPaper Box-Look) */
+    .toc-box {
+      margin: 2rem 0;
+      padding: 1.25rem 1.5rem;
+      border: 1px dashed var(--color-border);
+      background-color: rgba(128, 128, 128, 0.04);
+      border-radius: 4px;
+    }
+
+    .toc-title {
+      font-weight: 700;
+      font-size: 1.1rem;
+      margin-bottom: 0.75rem;
+      display: block;
+    }
+
+    .toc-list {
+      list-style: none;
+    }
+
+    .toc-list li {
+      margin: 0.3rem 0;
+    }
+
+    .toc-list a {
+      color: var(--color-text-base);
+      text-decoration: none;
+      border-bottom: 1px dashed transparent;
+    }
+
+    .toc-list a:hover {
+      color: var(--color-accent);
+      border-bottom-color: var(--color-accent);
+    }
+
+    .toc-lvl-1 { font-weight: 600; margin-top: 0.5rem !important; }
+    .toc-lvl-2 { padding-left: 1.25rem; font-size: 0.95rem; }
+    .toc-lvl-3 { padding-left: 2.5rem; font-size: 0.9rem; opacity: 0.85; }
+
+    /* Überschriften & Content */
+    section {
+      padding: 2rem 0;
+      border-bottom: 1px dashed var(--color-border);
+    }
+
+    section:last-of-type {
+      border-bottom: none;
+    }
+
+    h1.section-h1 {
+      font-size: 1.75rem;
+      color: var(--color-accent);
+      margin-bottom: 1rem;
+      scroll-margin-top: 1.5rem;
+    }
+
+    h2 {
+      font-size: 1.35rem;
+      margin-top: 2rem;
+      margin-bottom: 0.75rem;
+      scroll-margin-top: 1.5rem;
+    }
+
+    h3 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-top: 1.5rem;
+      margin-bottom: 0.5rem;
+      color: var(--color-accent);
+      scroll-margin-top: 1.5rem;
+    }
+
+    /* Anker-Symbol beim Hovern über Überschriften (typisch AstroPaper) */
+    h1.section-h1::before, h2::before, h3::before {
+      content: "# ";
+      color: var(--color-accent);
+      opacity: 0.6;
+    }
+
+    p {
+      margin-bottom: 1rem;
+    }
+
+    ul {
+      margin-left: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    /* Platzhalter für Bilder/Hardware */
+    .media-placeholder {
+      border: 1px dashed var(--color-accent);
+      padding: 2rem;
+      text-align: center;
+      margin: 1.25rem 0;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      opacity: 0.8;
+    }
+
+    /* Footer */
+    footer {
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1px dashed var(--color-border);
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      opacity: 0.8;
+    }
+
+    footer a {
+      color: var(--color-accent);
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <header>
+    <a href="#" class="site-title">Alles Wiegen</a>
+    <div class="nav-actions">
+      <a href="#zusammenfassung">Doku</a>
+      <a href="#hardware">Hardware</a>
+      <!-- GitHub Link anpassen -->
+      <a href="https://github.com/DEIN-USER/DEIN-REPO" target="_blank" rel="noopener">GitHub</a>
+      <button id="theme-btn" aria-label="Theme wechseln" title="Light/Dark Mode umschalten">
+        <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Titelbereich -->
+  <div class="hero">
+    <h1>Alles Wiegen</h1>
+    <p>Projektdokumentation, App-Anleitung und Hardware-Übersicht.</p>
+  </div>
+
+  <!-- Inhaltsverzeichnis -->
+  <nav class="toc-box" aria-label="Inhaltsverzeichnis">
+    <span class="toc-title">Inhaltsverzeichnis</span>
+    <ul class="toc-list">
+      <li class="toc-lvl-1"><a href="#zusammenfassung">Zusammenfassung</a></li>
+      
+      <li class="toc-lvl-1"><a href="#app-nutzung">App-Nutzung</a></li>
+      <li class="toc-lvl-2"><a href="#waage-einrichten">Waage einrichten</a></li>
+      <li class="toc-lvl-2"><a href="#im-spiel">Im Spiel</a></li>
+      <li class="toc-lvl-3"><a href="#standard-spiel">Standard-Spiel</a></li>
+      <li class="toc-lvl-3"><a href="#items-modus">Items-Modus</a></li>
+      <li class="toc-lvl-2"><a href="#ergebnis">Ergebnis</a></li>
+      <li class="toc-lvl-3"><a href="#rangliste">Rangliste</a></li>
+      <li class="toc-lvl-3"><a href="#events">Events</a></li>
+      <li class="toc-lvl-2"><a href="#ergebnisse-bearbeiten">Ergebnisse bearbeiten</a></li>
+      <li class="toc-lvl-3"><a href="#ergebnisse-teilen">Ergebnisse teilen</a></li>
+      <li class="toc-lvl-2"><a href="#andere-optionen">Andere Optionen</a></li>
+
+      <li class="toc-lvl-1"><a href="#hardware">Hardware</a></li>
+      <li class="toc-lvl-2"><a href="#beschreibung">Beschreibung</a></li>
+      <li class="toc-lvl-2"><a href="#die-box">Die Box</a></li>
+      <li class="toc-lvl-2"><a href="#die-badges">Die Badges</a></li>
+      <li class="toc-lvl-3"><a href="#bilder">Bilder</a></li>
+      <li class="toc-lvl-3"><a href="#baender">Bänder</a></li>
+      <li class="toc-lvl-3"><a href="#saugnaepfe">Saugnäpfe</a></li>
+    </ul>
+  </nav>
+
+  <!-- Hauptinhalt -->
+  <main>
+
+    <!-- 1. Zusammenfassung -->
+    <section id="zusammenfassung">
+      <h1 class="section-h1">Zusammenfassung</h1>
+      <p>
+        Hier kommt eine kurze Übersicht über <strong>Alles Wiegen</strong> hin: Worum geht es bei dem Projekt, wie spielen App und Hardware zusammen und für wen ist es gedacht?
+      </p>
+    </section>
+
+    <!-- 2. App-Nutzung -->
+    <section id="app-nutzung">
+      <h1 class="section-h1">App-Nutzung</h1>
+      <p>
+        Alle Schritte von der ersten Verbindung mit der Waage bis zum Teilen der Spielstände.
+      </p>
+
+      <h2 id="waage-einrichten">Waage einrichten</h2>
+      <p>
+        Beschreibung, wie die Waage eingeschaltet, gekoppelt (z. B. via Bluetooth/WLAN) und kalibriert wird.
+      </p>
+
+      <h2 id="im-spiel">Im Spiel</h2>
+      <p>
+        Allgemeiner Ablauf einer Spielrunde in der App.
+      </p>
+
+      <h3 id="standard-spiel">Standard-Spiel</h3>
+      <p>
+        Regeln und Ablauf des klassischen Spielmodus ohne Zusatzfunktionen.
+      </p>
+
+      <h3 id="items-modus">Items-Modus</h3>
+      <p>
+        Erklärung der Spezial-Items, Modifikatoren und wie diese das Wiegen bzw. die Punktevergabe beeinflussen.
+      </p>
+
+      <h2 id="ergebnis">Ergebnis</h2>
+      <p>
+        Auswertung nach Abschluss einer Runde.
+      </p>
+
+      <h3 id="rangliste">Rangliste</h3>
+      <p>
+        Wie die Platzierungen berechnet und dauerhaft gespeichert werden.
+      </p>
+
+      <h3 id="events">Events</h3>
+      <p>
+        Besondere Ereignisse, Meilensteine oder Rekorde, die während des Spiels ausgelöst wurden.
+      </p>
+
+      <h2 id="ergebnisse-bearbeiten">Ergebnisse bearbeiten</h2>
+      <p>
+        Nachträgliches Korrigieren von Werten, Spielernamen oder Löschen fehlerhafter Messungen.
+      </p>
+
+      <h3 id="ergebnisse-teilen">Ergebnisse teilen</h3>
+      <p>
+        Exportmöglichkeiten (z. B. als Bild, Link oder Text) für Messenger und Social Media.
+      </p>
+
+      <h2 id="andere-optionen">Andere Optionen</h2>
+      <p>
+        Weitere Einstellungen in der App (z. B. Einheiten, Soundeffekte, Dark Mode, Reset).
+      </p>
+    </section>
+
+    <!-- 3. Hardware -->
+    <section id="hardware">
+      <h1 class="section-h1">Hardware</h1>
+      <p>
+        Aufbau und Komponenten der physischen Einheit.
+      </p>
+
+      <h2 id="beschreibung">Beschreibung</h2>
+      <p>
+        Technische Details zu Sensoren (Wägezellen), Mikrocontroller, Stromversorgung und Funktionsweise.
+      </p>
+
+      <h2 id="die-box">Die Box</h2>
+      <p>
+        Informationen zum Gehäuse (z. B. 3D-Druck, Maße, Material und Montage).
+      </p>
+
+      <h2 id="die-badges">Die Badges</h2>
+      <p>
+        Übersicht über die physischen Badges/Marker und deren Einsatz.
+      </p>
+
+      <h3 id="bilder">Bilder</h3>
+      <div class="media-placeholder">
+        [ Platzhalter für Fotos der Hardware, Box und Badges – hier &lt;img src="..."&gt; einfügen ]
+      </div>
+
+      <h3 id="baender">Bänder</h3>
+      <p>
+        Details zu den verwendeten Bändern/Befestigungen und deren Handhabung.
+      </p>
+
+      <h3 id="saugnaepfe">Saugnäpfe</h3>
+      <p>
+        Hinweise zur Befestigung auf glatten Oberflächen und zur optimalen Haftung.
+      </p>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <span>Alles Wiegen &copy; 2026</span>
+    <a href="#">Nach oben ↑</a>
+  </footer>
+
+  <!-- Light / Dark Mode Script -->
+  <script>
+    const themeBtn = document.getElementById('theme-btn');
+    const sunIcon = document.getElementById('sun-icon');
+    const moonIcon = document.getElementById('moon-icon');
+    const htmlEl = document.documentElement;
+
+    // Gespeichertes Theme oder System-Präferenz laden
+    const savedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+      setTheme('dark');
+    }
+
+    themeBtn.addEventListener('click', () => {
+      const currentTheme = htmlEl.getAttribute('data-theme');
+      setTheme(currentTheme === 'dark' ? 'light' : 'dark');
+    });
+
+    function setTheme(theme) {
+      htmlEl.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      if (theme === 'dark') {
+        sunIcon.style.display = 'block';
+        moonIcon.style.display = 'none';
+      } else {
+        sunIcon.style.display = 'none';
+        moonIcon.style.display = 'block';
+      }
+    }
+  </script>
+
+</body>
+</html>
