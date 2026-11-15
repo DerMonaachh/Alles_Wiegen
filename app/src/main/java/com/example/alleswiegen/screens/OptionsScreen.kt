@@ -101,7 +101,7 @@ fun OptionsScreen(viewModel: GameViewModel, uiState: GameUiState) {
             when (selectedTabIndex) {
                 0 -> BluetoothOptions(viewModel, uiState, context)
                 1 -> GameOptions(viewModel, uiState, context)
-                2 -> ItemOverview()
+                2 -> ItemOverview(viewModel, uiState, context)
                 3 -> GeneralOptions(viewModel, uiState)
             }
         }
@@ -119,7 +119,7 @@ fun OptionsScreen(viewModel: GameViewModel, uiState: GameUiState) {
 }
 
 @Composable
-fun ItemOverview() {
+fun ItemOverview(viewModel: GameViewModel, uiState: GameUiState, context: Context) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -127,14 +127,14 @@ fun ItemOverview() {
     ) {
         item {
             Text(
-                text = "Item Übersicht",
+                text = "Item Übersicht & Einstellungen",
                 style = MaterialTheme.typography.headlineSmall,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
         }
 
-        items(AvailableItems.items) { item ->
-            ItemCard(item)
+        items(uiState.getEffectiveItems()) { item ->
+            ItemCard(item, viewModel, context)
         }
 
 
@@ -142,7 +142,11 @@ fun ItemOverview() {
 }
 
 @Composable
-fun ItemCard(item: Item) {
+fun ItemCard(item: Item, viewModel: GameViewModel, context: Context) {
+    var rarityInput by remember(item.rarity) { mutableStateOf(item.rarity.toString()) }
+    var multiInput by remember(item.multiplikator) { mutableStateOf(item.multiplikator.toString()) }
+    var wertInput by remember(item.wert) { mutableStateOf(item.wert.toString()) }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -150,38 +154,85 @@ fun ItemCard(item: Item) {
             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
         )
     ) {
-        Row(
-            modifier = Modifier
-                .padding(12.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Image(
-                painter = painterResource(id = item.imageRes),
-                contentDescription = item.name,
-                modifier = Modifier
-                    .size(80.dp)
-                    .clip(RoundedCornerShape(8.dp)),
-                contentScale = ContentScale.Crop
-            )
-            
-            Spacer(modifier = Modifier.size(16.dp))
-            
-            Column {
-                Text(
-                    text = item.name,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
+        Column(modifier = Modifier.padding(12.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Image(
+                    painter = painterResource(id = item.imageRes),
+                    contentDescription = item.name,
+                    modifier = Modifier
+                        .size(80.dp)
+                        .clip(RoundedCornerShape(8.dp)),
+                    contentScale = ContentScale.Crop
                 )
-                Text(
-                    text = "Seltenheit: ${"★".repeat(item.rarity)}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.primary
+                
+                Spacer(modifier = Modifier.size(16.dp))
+                
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = item.name,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "Seltenheit: ${"★".repeat(item.rarity.coerceIn(1, 5))}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = item.buildBeschreibung(),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+            HorizontalDivider(thickness = 0.5.dp, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f))
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                OutlinedTextField(
+                    value = rarityInput,
+                    onValueChange = { newVal ->
+                        rarityInput = newVal
+                        newVal.toIntOrNull()?.let { r ->
+                            viewModel.updateItemProperty(context, item.id, r, item.multiplikator, item.wert)
+                        }
+                    },
+                    label = { Text("Seltenheit") },
+                    modifier = Modifier.weight(1f),
+                    singleLine = true
                 )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = item.buildBeschreibung(),
-                    style = MaterialTheme.typography.bodyMedium
+                OutlinedTextField(
+                    value = multiInput,
+                    onValueChange = { newVal ->
+                        multiInput = newVal
+                        newVal.toDoubleOrNull()?.let { m ->
+                            viewModel.updateItemProperty(context, item.id, item.rarity, m, item.wert)
+                        }
+                    },
+                    label = { Text("Multi.") },
+                    modifier = Modifier.weight(1f),
+                    singleLine = true
+                )
+                OutlinedTextField(
+                    value = wertInput,
+                    onValueChange = { newVal ->
+                        wertInput = newVal
+                        newVal.toIntOrNull()?.let { w ->
+                            viewModel.updateItemProperty(context, item.id, item.rarity, item.multiplikator, w)
+                        }
+                    },
+                    label = { Text("Wert") },
+                    modifier = Modifier.weight(1f),
+                    singleLine = true
                 )
             }
         }

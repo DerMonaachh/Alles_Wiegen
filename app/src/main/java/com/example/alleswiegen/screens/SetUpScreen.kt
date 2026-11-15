@@ -279,7 +279,7 @@ fun SetupScreen(viewModel: GameViewModel, uiState: GameUiState) {
 
                         Box(modifier = Modifier.heightIn(max = 200.dp)) {
                             LazyColumn {
-                                items(AvailableItems.items) { item ->
+                                items(uiState.getEffectiveItems()) { item ->
                                     Row(
                                         verticalAlignment = Alignment.CenterVertically,
                                         modifier = Modifier

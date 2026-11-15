@@ -1026,6 +1026,22 @@ class GameViewModel (private val repository: PlayerScoreRepository) : ViewModel(
         val vibrate = (prefs.getString("vibration", "true") ?: "true").toBoolean()
         val jingle = (prefs.getString("jingle", "true") ?: "true").toBoolean()
         val jingleLocation = prefs.getString("jingleLocation", "") ?: ""
+
+        val itemOverrides = mutableMapOf<Int, ItemOverride>()
+        AvailableItems.getAllIds().forEach { id ->
+            val defaultItem = AvailableItems.items.find { it.id == id }
+            val r = prefs.getInt("item_${id}_rarity", -1)
+            val m = prefs.getFloat("item_${id}_multiplikator", -1f)
+            val w = prefs.getInt("item_${id}_wert", -1)
+            if (r != -1 || m != -1f || w != -1) {
+                itemOverrides[id] = ItemOverride(
+                    rarity = if (r != -1) r else (defaultItem?.rarity ?: 1),
+                    multiplikator = if (m != -1f) m.toDouble() else (defaultItem?.multiplikator ?: 0.0),
+                    wert = if (w != -1) w else (defaultItem?.wert ?: 0)
+                )
+            }
+        }
+
         _uiState.update { it.copy(
             previousPlayers = players,
             bluetoothAddress = savedAddress, // Adresse in den State schreiben
@@ -1034,6 +1050,7 @@ class GameViewModel (private val repository: PlayerScoreRepository) : ViewModel(
             vibrate = vibrate,
             showJingle = jingle,
             jingleLocation = jingleLocation,
+            itemOverrides = itemOverrides,
         ) }
     }
 
@@ -1090,6 +1107,20 @@ class GameViewModel (private val repository: PlayerScoreRepository) : ViewModel(
                 currentAllowed.add(itemId)
             }
             currentState.copy(erlaubteItems = currentAllowed)
+        }
+    }
+
+    fun updateItemProperty(context: Context, itemId: Int, rarity: Int, multiplikator: Double, wert: Int) {
+        _uiState.update { currentState ->
+            val newOverrides = currentState.itemOverrides.toMutableMap()
+            newOverrides[itemId] = ItemOverride(rarity, multiplikator, wert)
+            currentState.copy(itemOverrides = newOverrides)
+        }
+        val prefs = context.getSharedPreferences("AllesWiegenPrefs", Context.MODE_PRIVATE)
+        prefs.edit {
+            putInt("item_${itemId}_rarity", rarity)
+            putFloat("item_${itemId}_multiplikator", multiplikator.toFloat())
+            putInt("item_${itemId}_wert", wert)
         }
     }
 

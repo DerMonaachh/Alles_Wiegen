@@ -33,7 +33,7 @@ object AvailableItems {
     val items = listOf(
         Item(
             id = 1,
-            name = "Wein Panzer",
+            name = "Roter Hopfen",
             imageRes = R.drawable.wein, // Platzhalter
             rarity = 2,
             wert = 5,
@@ -42,7 +42,7 @@ object AvailableItems {
         ),
         Item(
             id = 2,
-            name = "Blue Shell",
+            name = "Blauer Hopfen",
             imageRes = R.drawable.blue, // Platzhalter
             rarity = 3,
             wert = 5,
@@ -52,8 +52,8 @@ object AvailableItems {
         ),
         Item(
             id = 3,
-            name = "Pilz-Bagel",
-            imageRes = R.drawable.bagel_pilz, // Platzhalter
+            name = "Reset",
+            imageRes = R.drawable.reset, // Platzhalter
             rarity = 2,
             beschreibung = "Dein höchste bisheriger Fehler wird auf 0 gesetzt."
         ),
@@ -74,16 +74,16 @@ object AvailableItems {
         ),
         Item(
             id = 6,
-            name = "Gurken-Boy",
-            imageRes = R.drawable.gurken_panzer, // Platzhalter
+            name = "Grüner Hopfen",
+            imageRes = R.drawable.grun, // Platzhalter
             rarity = 1,
             beschreibung = "Wählen einen Spieler der einen Strafschluck trinken muss.",
             target = true
         ),
         Item(
             id = 7,
-            name = "Gurken-Gatling",
-            imageRes = R.drawable.gurken_gatling, // Platzhalter
+            name = "Gruppen Hopfen",
+            imageRes = R.drawable.tripple_grun, // Platzhalter
             rarity = 2,
             beschreibung = "Alle Spieler außer dir müssen einen Strafschluck trinken.",
             target = false

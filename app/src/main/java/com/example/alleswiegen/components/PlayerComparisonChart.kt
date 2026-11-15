@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp // WICHTIG für .sp
@@ -36,6 +37,8 @@ fun AdvancedPlayerChart(playerRanks: List<PlayerRank>,method: String) {
         Color(0xFF607D8B), Color(0xFFE91E63), Color(0xFF3F51B5)
     )
 
+    val textColor = MaterialTheme.colorScheme.onSurface
+
     // --- LEGENDE ---
     val legend = horizontalLegend(
         items = playerNames.mapIndexed { index, name ->
@@ -43,7 +46,7 @@ fun AdvancedPlayerChart(playerRanks: List<PlayerRank>,method: String) {
             legendItem(
                 icon = shapeComponent(shape = VicoShapes.pillShape, color = color),
                 label = textComponent(
-                    color = Color.Black,
+                    color = textColor,
                     textSize = 12.sp
                 ),
                 labelText = name
@@ -94,8 +97,11 @@ fun AdvancedPlayerChart(playerRanks: List<PlayerRank>,method: String) {
             )
         },
         legend = legend,
-        startAxis = rememberStartAxis(),
+        startAxis = rememberStartAxis(
+            label = textComponent(color = textColor)
+        ),
         bottomAxis = rememberBottomAxis(
+            label = textComponent(color = textColor),
             valueFormatter = { value, _ -> "${value.toInt() + 1}" }
         )
     )

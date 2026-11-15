@@ -119,6 +119,12 @@ enum class GameMode(val displayName: String) {
 
 
 
+data class ItemOverride(
+    val rarity: Int,
+    val multiplikator: Double,
+    val wert: Int
+)
+
 data class GameUiState(
     val previousScreen: Screen = Screen.SETUP,
     val players: List<Player> = emptyList(),
@@ -147,9 +153,21 @@ data class GameUiState(
     val gameMode: GameMode = GameMode.Normal,
     val itemVerteilung:String= ItemDistro.runden_erster.displayName,
     val itemsProRunde:Int=2,
-    val erlaubteItems: List<Int> = AvailableItems.getAllIds()
-
-
-
-
-)
+    val erlaubteItems: List<Int> = AvailableItems.getAllIds(),
+    val itemOverrides: Map<Int, ItemOverride> = emptyMap()
+) {
+    fun getEffectiveItems(): List<Item> {
+        return AvailableItems.items.map { item ->
+            val override = itemOverrides[item.id]
+            if (override != null) {
+                item.copy(
+                    rarity = override.rarity,
+                    multiplikator = override.multiplikator,
+                    wert = override.wert
+                )
+            } else {
+                item
+            }
+        }
+    }
+}
