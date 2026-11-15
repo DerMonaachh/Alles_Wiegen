@@ -56,8 +56,8 @@ class GameViewModel (private val repository: PlayerScoreRepository) : ViewModel(
 
     // Inside GameViewModel
     val allEvents: StateFlow<List<EventEntry>> = repository.getAllEvents().map { list ->
-        // If the database is empty, return a list containing the "All Time" dummy event
-        list.ifEmpty {
+        val hasAllTime = list.any { it.name == "All Time" }
+        if (!hasAllTime) {
             listOf(
                 EventEntry(
                     id = 0,
@@ -65,8 +65,9 @@ class GameViewModel (private val repository: PlayerScoreRepository) : ViewModel(
                     startTimestamp = 0,
                     endTimestamp = Long.MAX_VALUE
                 )
-            )
-
+            ) + list
+        } else {
+            list
         }
     }
         .stateIn(

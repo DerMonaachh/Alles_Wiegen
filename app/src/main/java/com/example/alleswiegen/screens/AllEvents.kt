@@ -84,8 +84,7 @@ fun AllEvents(
     BackHandler {
         viewModel.navigateTo(Screen.EVENT)
     }
-    // Collecting the filtered scores from the flow you provided
-    val scores by viewModel.filteredScores.collectAsState()
+    // Collecting all scores from the repository
     val allScores by viewModel.allScores.collectAsState()
     var showEditWindow by remember { mutableStateOf<Long?>(null) }
     var showQRWindow by remember { mutableStateOf<Long?>(null) }
@@ -129,8 +128,8 @@ fun AllEvents(
 
     // Grouping scores by timestamp to represent unique games
     // We sort keys descending to show the newest games first
-    val groupedGames = remember(scores) {
-        scores.groupBy { it.timestamp }.toSortedMap(compareByDescending { it })
+    val groupedGames = remember(allScores) {
+        allScores.groupBy { it.timestamp }.toSortedMap(compareByDescending { it })
     }
 
     Scaffold(

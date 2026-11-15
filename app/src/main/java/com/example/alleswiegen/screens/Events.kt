@@ -160,7 +160,7 @@ fun Events(
     LaunchedEffect(currentEvent) {
         viewModel.setTimeFilterwithDates(
             currentEvent?.startTimestamp ?: 0,
-            currentEvent?.endTimestamp ?: 0
+            currentEvent?.endTimestamp ?: Long.MAX_VALUE
         )
     }
 
