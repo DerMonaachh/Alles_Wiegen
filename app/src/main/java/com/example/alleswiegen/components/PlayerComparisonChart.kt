@@ -101,14 +101,23 @@ fun AdvancedPlayerChart(playerRanks: List<PlayerRank>,method: String) {
     )
 }
 @Composable
-fun transformScoresToPlayerRanks(viewModel: GameViewModel): List<PlayerRank> {
+fun transformScoresToPlayerRanks(viewModel: GameViewModel, gameMode: String = "Normal"): List<PlayerRank> {
     // 1. Die Scores aus dem ViewModel beobachten
     val selectedScores by viewModel.filteredScores.collectAsState(initial = emptyList())
+
+    // Filter by gameMode (extensible mapping)
+    val modeInt = when (gameMode) {
+        "Normal" -> 0
+        "Items" -> 1
+        else -> 0 // Default to Normal if mode is unknown
+    }
+
+    val scoresFilteredByMode = selectedScores.filter { it.gameMode == modeInt }
 
     // 2. Alle existierenden "Zeit-Indizes" (Int) finden und sortieren.
     // Das stellt sicher, dass wenn Spiel A (Int 10) und Spiel B (Int 25) existieren,
     // diese auf Index 0 und 1 gemappt werden.
-    val distinctTime = selectedScores
+    val distinctTime = scoresFilteredByMode
         .map { it.timestamp } // Das ist dein Int-Wert aus der DB
         .distinct()
         .sorted()
@@ -118,7 +127,7 @@ fun transformScoresToPlayerRanks(viewModel: GameViewModel): List<PlayerRank> {
         .associate { it.value to it.index.toLong() }
 
     // 4. Gruppieren nach Spielername
-    return selectedScores.groupBy { it.name }
+    return scoresFilteredByMode.groupBy { it.name }
         .flatMap { (playerName, scores) ->
             // Innerhalb des Spielers chronologisch sortieren
             val playerSortedScores = scores.sortedBy { it.timestamp }
@@ -157,6 +166,7 @@ fun transformScoresToPlayerRanks(viewModel: GameViewModel): List<PlayerRank> {
 
                     averageError = average,
                     bagelRate = runningBagelCount.toDouble()/runningGameCount.toDouble(),
+                    bagels = runningBagelCount,
                     // Deine generische Punkte-Logik
                     pointsByErrorClassic = runningClassicPoints,
                     pointsByErrorNoExxer = runningExxerPoints,
@@ -181,9 +191,16 @@ fun getFinalPlayerRanks(allRanks :List<PlayerRank>): List<PlayerRank> {
 }
 // Deine Platzhalter-Funktion
 fun calculateGenericPoints(score: PlayerScoreEntry): Pair<Int,Int> {
-
-    val classicPoints=(score.playerCount-score.classicPosition)-(score.playerCount/2)+1
-    val exxerPoints=(score.playerCount-score.withoutExerPosition)-(score.playerCount/2)+1
+    val errorpoints =when {
+        score.averageError <4.0 -> 3
+        score.averageError <=6 -> 2
+        score.averageError <=10 -> 1
+        score.averageError <=20 -> 0
+        score.averageError <=30 -> -1
+        else -> -2
+    }
+    val classicPoints=(score.playerCount-score.classicPosition)-(score.playerCount/2)+1+errorpoints
+    val exxerPoints=(score.playerCount-score.withoutExerPosition)-(score.playerCount/2)+1+errorpoints
     return Pair(classicPoints,exxerPoints)
 }
 

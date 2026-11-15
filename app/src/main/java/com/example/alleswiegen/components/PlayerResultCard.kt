@@ -166,12 +166,12 @@ fun PlayerResultCard(
     val releventError=if (enteredValue==""){
         player.lastError
     }else{
-        player.upcomingError(enteredValue.toInt())
+        (player.upcomingError(enteredValue.toInt()).toDouble()*player.nextErrorMultiplier).toInt()
     }
     val releventAbsolutError=if (enteredValue==""){
         player.totalError
     }else{
-        abs(player.upcomingError(enteredValue.toInt()))+player.totalError
+        (abs(player.upcomingError(enteredValue.toInt()))*player.nextErrorMultiplier).toInt()+player.totalError
     }
     Card(
         modifier = modifier.fillMaxWidth(),

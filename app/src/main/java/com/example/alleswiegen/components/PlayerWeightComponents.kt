@@ -35,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.alleswiegen.AvailableItems
 import com.example.alleswiegen.GameUiState
 import com.example.alleswiegen.GameViewModel
 import com.example.alleswiegen.Player
@@ -191,13 +192,22 @@ fun InnerResultCadd(releventError: Int, releventAbsolutError: Int, player: Playe
     Column() {
         val textColor=if (releventError>=0) Color(0xFF4CAF50) else MaterialTheme.colorScheme.error
         val headerText=if (round > 1){
+            if (player.nextErrorMultiplier!=1.0){
+                "${player.position}. ${player.name} (${player.personalTarget}g) - Err Multi ${player.nextErrorMultiplier}"
+            }
+            else{
+                "${player.position}. ${player.name} (${player.personalTarget}g)"
+            }
 
-            "${player.position}. ${player.name} (${player.personalTarget}g)"
+
 
 
         }
         else{
             "${player.name} (${player.personalTarget}g)"
+        }
+        if (player.itemHit!=0){
+            Text(AvailableItems.items.first { it.id == player.itemHit }.name)
         }
         Row() {
 

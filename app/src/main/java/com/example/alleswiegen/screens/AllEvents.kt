@@ -1,6 +1,8 @@
 package com.example.alleswiegen.screens
 
 import android.annotation.SuppressLint
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.copy
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -22,6 +24,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.Upload
 import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material3.AlertDialog
@@ -46,6 +51,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.isEmpty
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.dp
@@ -62,6 +68,12 @@ import java.text.SimpleDateFormat
 import kotlin.text.format
 import kotlin.text.groupBy
 import kotlin.text.toList
+import java.io.OutputStreamWriter
+import java.io.BufferedWriter
+import java.io.BufferedReader
+import java.io.InputStreamReader
+import android.widget.Toast
+import androidx.activity.compose.BackHandler
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -69,10 +81,51 @@ fun AllEvents(
     viewModel: GameViewModel,
     uiState: GameUiState,
 ){
+    BackHandler {
+        viewModel.navigateTo(Screen.EVENT)
+    }
     // Collecting the filtered scores from the flow you provided
     val scores by viewModel.filteredScores.collectAsState()
+    val allScores by viewModel.allScores.collectAsState()
     var showEditWindow by remember { mutableStateOf<Long?>(null) }
     var showQRWindow by remember { mutableStateOf<Long?>(null) }
+    var gameToDelete by remember { mutableStateOf<Long?>(null) }
+    val context = LocalContext.current
+
+    val exportLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("text/csv")
+    ) { uri ->
+        uri?.let {
+            try {
+                context.contentResolver.openOutputStream(it)?.use { outputStream ->
+                    BufferedWriter(OutputStreamWriter(outputStream)).use { writer ->
+                        writer.write(viewModel.generateCsvForAllGames())
+                    }
+                }
+                Toast.makeText(context, "Export erfolgreich", Toast.LENGTH_SHORT).show()
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(context, "Export fehlgeschlagen", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    val importLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        uri?.let {
+            try {
+                context.contentResolver.openInputStream(it)?.use { inputStream ->
+                    val content = BufferedReader(InputStreamReader(inputStream)).readText()
+                    val message = viewModel.importCsvData(content)
+                    Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(context, "Import fehlgeschlagen", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
 
     // Grouping scores by timestamp to represent unique games
     // We sort keys descending to show the newest games first
@@ -87,6 +140,18 @@ fun AllEvents(
                 navigationIcon = {
                     IconButton(onClick = {viewModel.navigateTo(Screen.EVENT)}) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Zurück")
+                    }
+                },
+                actions = {
+                    IconButton(onClick = {
+                        importLauncher.launch(arrayOf("text/csv", "text/comma-separated-values", "application/csv"))
+                    }) {
+                        Icon(Icons.Default.Upload, contentDescription = "Spiele importieren")
+                    }
+                    IconButton(onClick = {
+                        exportLauncher.launch("alles_wiegen_export.csv")
+                    }) {
+                        Icon(Icons.Default.Download, contentDescription = "Alle Spiele exportieren")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -116,11 +181,32 @@ fun AllEvents(
                         timestamp = timestamp,
                         players = playersInGame,
                         onClick = { showEditWindow = timestamp },
-                        onLongClick = {showQRWindow=timestamp}
+                        onLongClick = {showQRWindow=timestamp},
+                        onDeleteClick = { gameToDelete = timestamp }
                     )
                 }
             }
         }
+    }
+    if (gameToDelete != null) {
+        AlertDialog(
+            onDismissRequest = { gameToDelete = null },
+            title = { Text("Spiel löschen") },
+            text = { Text("Möchtest du dieses Spiel wirklich löschen?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.deleteGame(gameToDelete!!)
+                    gameToDelete = null
+                }) {
+                    Text("Löschen", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { gameToDelete = null }) {
+                    Text("Abbrechen")
+                }
+            }
+        )
     }
     if (showEditWindow != null) {
         val selectedTimestamp = showEditWindow!!
@@ -158,7 +244,8 @@ fun GameHistoryCard(
     timestamp: Long,
     players: List<PlayerScoreEntry>,
     onClick: () -> Unit,
-    onLongClick: () -> Unit = {}
+    onLongClick: () -> Unit = {},
+    onDeleteClick: () -> Unit = {}
 ) {
     // Format the date/time
     val formattedDate = remember(timestamp) {
@@ -225,6 +312,14 @@ fun GameHistoryCard(
                 contentDescription = "Details",
                 tint = MaterialTheme.colorScheme.outline
             )
+
+            IconButton(onClick = onDeleteClick) {
+                Icon(
+                    Icons.Default.Delete,
+                    contentDescription = "Löschen",
+                    tint = MaterialTheme.colorScheme.error.copy(alpha = 0.7f)
+                )
+            }
         }
     }
 }

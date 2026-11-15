@@ -7,6 +7,7 @@ class PlayerRank(
     val number: Long,
     val averageError: Double,
     val bagelRate: Double,
+    val bagels:Int,
     val pointsByErrorClassic: Int,
     val pointsByErrorNoExxer: Int,
 

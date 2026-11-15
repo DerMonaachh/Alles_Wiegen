@@ -30,6 +30,7 @@ data class PlayerScoreEntry(
     val totalErrorWithoutExer: Int= 0,
     val withoutExerPosition: Int=0,
     val bagelCount: Int = 0,
+    val gameMode: Int=0,//0 = normal mode , 1 = chaos
 
 
 
@@ -74,12 +75,16 @@ interface PlayerScoreDao {
     fun getAllEvents(): Flow<List<EventEntry>>
     @androidx.room.Update
     suspend fun updateScore(score: PlayerScoreEntry)
+
+    @Query("DELETE FROM player_scores WHERE timestamp = :timestamp")
+    suspend fun deleteScoresByTimestamp(timestamp: Long)
+
     @Query("DELETE FROM events WHERE id = :eventId")
     suspend fun deleteEvent(eventId: Long)
 }
 
-// 1. Version auf 10 erhöhen
-@Database(entities = [PlayerScoreEntry::class, EventEntry::class], version = 11)
+
+@Database(entities = [PlayerScoreEntry::class, EventEntry::class], version = 12)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun playerScoreDao(): PlayerScoreDao
 
@@ -123,6 +128,11 @@ class PlayerScoreRepository(private val dao: PlayerScoreDao) {
     suspend fun clearAll() {
         dao.deleteAll()
     }
+
+    suspend fun deleteGame(timestamp: Long) {
+        dao.deleteScoresByTimestamp(timestamp)
+    }
+
      fun  getAllEvents() = dao.getAllEvents()
     fun getScoresForRange(start: Long, end: Long) = dao.getScoresByTimeRange(start, end)
 }

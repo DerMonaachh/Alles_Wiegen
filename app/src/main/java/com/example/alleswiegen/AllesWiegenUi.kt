@@ -31,6 +31,7 @@ import com.example.alleswiegen.screens.Events
 
 import com.example.alleswiegen.screens.SetupScreen
 import com.example.alleswiegen.screens.InitialWeighingScreen
+import com.example.alleswiegen.screens.ItemHandling
 import com.example.alleswiegen.screens.OptionsScreen
 import com.example.alleswiegen.screens.PickExxerScreen
 import com.example.alleswiegen.screens.PlayerWeightingScreen
@@ -72,6 +73,7 @@ fun AllesWiegenApp(viewModel: GameViewModel = viewModel()) {
                     Screen.OPTIONS -> OptionsScreen(viewModel, uiState)
                     Screen.EVENT -> Events(viewModel, uiState)
                     Screen.ALL_EVENTS -> AllEvents(viewModel, uiState)
+                    Screen.ITEM_HANDLING -> ItemHandling(viewModel, uiState)
 
 
 

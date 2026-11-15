@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -19,6 +20,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -33,6 +35,7 @@ import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -47,6 +50,16 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import com.example.alleswiegen.AvailableItems
+import com.example.alleswiegen.Item
+import com.example.alleswiegen.utils.PatchNotes
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import com.example.alleswiegen.GameUiState
 import com.example.alleswiegen.GameViewModel
 import com.example.alleswiegen.Screen
@@ -55,11 +68,11 @@ import com.example.alleswiegen.Screen
 fun OptionsScreen(viewModel: GameViewModel, uiState: GameUiState) {
     // State, um den aktuell ausgewählten Tab-Index zu speichern (Standard: 0 -> Bluetooth)
     var selectedTabIndex by remember { mutableIntStateOf(0) }
-    val tabTitles = listOf("Bluetooth Optionen", "Spiel Optionen", "Allgemeines")
+    val tabTitles = listOf("Bluetooth", "Spiel", "Items", "Allgemeines")
     val context = LocalContext.current
 
 
-    Column(modifier = Modifier.fillMaxWidth()) {
+    Column(modifier = Modifier.fillMaxSize()) {
         // Die Material 3 Tab-Leiste
         TabRow(selectedTabIndex = selectedTabIndex) {
             tabTitles.forEachIndexed { index, title ->
@@ -69,7 +82,8 @@ fun OptionsScreen(viewModel: GameViewModel, uiState: GameUiState) {
                     text = {
                         Text(
                             text = title,
-                            style = MaterialTheme.typography.titleSmall
+                            style = MaterialTheme.typography.titleSmall,
+                            maxLines = 1
                         )
                     }
                 )
@@ -79,23 +93,97 @@ fun OptionsScreen(viewModel: GameViewModel, uiState: GameUiState) {
         // Container für den Inhalt des jeweils ausgewählten Tabs
         Box(
             modifier = Modifier
+                .weight(1f)
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(horizontal = 16.dp),
             contentAlignment = Alignment.TopStart
         ) {
             when (selectedTabIndex) {
-                0 -> BluetoothOptions(viewModel, uiState,context)
-                1 -> GameOptions(viewModel, uiState,context)
-                2 -> GeneralOptions(viewModel, uiState)
+                0 -> BluetoothOptions(viewModel, uiState, context)
+                1 -> GameOptions(viewModel, uiState, context)
+                2 -> ItemOverview()
+                3 -> GeneralOptions(viewModel, uiState)
             }
         }
-        Spacer(Modifier.height(16.dp))
+        
         Button(
             onClick = { viewModel.navigateTo(Screen.SETUP) },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
 
             ) {
             Text("Zurück")
+        }
+    }
+}
+
+@Composable
+fun ItemOverview() {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+        contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = 16.dp)
+    ) {
+        item {
+            Text(
+                text = "Item Übersicht",
+                style = MaterialTheme.typography.headlineSmall,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+        }
+
+        items(AvailableItems.items) { item ->
+            ItemCard(item)
+        }
+
+
+    }
+}
+
+@Composable
+fun ItemCard(item: Item) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(12.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Image(
+                painter = painterResource(id = item.imageRes),
+                contentDescription = item.name,
+                modifier = Modifier
+                    .size(80.dp)
+                    .clip(RoundedCornerShape(8.dp)),
+                contentScale = ContentScale.Crop
+            )
+            
+            Spacer(modifier = Modifier.size(16.dp))
+            
+            Column {
+                Text(
+                    text = item.name,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "Seltenheit: ${"★".repeat(item.rarity)}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = item.buildBeschreibung(),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
         }
     }
 }
@@ -268,48 +356,7 @@ fun GameOptions(viewModel: GameViewModel, uiState: GameUiState,context: Context)
                 )
 
                 // Die Option als klickbare Zeile
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(androidx.compose.foundation.shape.RoundedCornerShape(8.dp)) // Clip für den Ripple-Effekt
-                        .clickable { viewModel.toggleExenByNull(!uiState.exenByNull) } // Ganze Zeile klickbar
-                        .padding(vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = "Exen bei 0",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                        Text(
-                            text = "Oder seid ihr Muschis?",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
 
-                    // Der Switch
-                    Switch(
-                        checked = uiState.exenByNull,
-                        onCheckedChange = null, // Auf null, da clickable in der Row das übernimmt
-                        thumbContent = if (uiState.exenByNull) {
-                            {
-                                Icon(
-                                    imageVector = Icons.Filled.Check,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(SwitchDefaults.IconSize),
-                                )
-                            }
-                        } else null
-                    )
-                }
-                HorizontalDivider(
-                    modifier = Modifier.padding(vertical = 8.dp),
-                    thickness = 0.5.dp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
-                )
 
                 // Die Option als klickbare Zeile
                 Row(
@@ -375,12 +422,41 @@ fun GameOptions(viewModel: GameViewModel, uiState: GameUiState,context: Context)
                 }
             }
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = "Punkte Berechnung",
+            style = MaterialTheme.typography.headlineSmall,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
+            )
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = "Die Punkte (P) pro Spiel werden wie folgt berechnet:\nP=(A/2-Pos)+1+E\nWobei A die Spieler " +
+                            "Anzahl, Pos die Position (1 basiert) und E eine Wert basierend auf dem durchscnittlichen Fehler ist.\n" +
+                            "averageError <4.0 -> 3\n" +
+                            "averageError <=6 -> 2\n" +
+                            "averageError <=10 -> 1\n" +
+                            "averageError <=20 -> 0\n" +
+                            "averageError <=30 -> -1",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(16.dp))
     }
 }
 
 @Composable
 fun GeneralOptions(viewModel: GameViewModel, uiState: GameUiState) {
     val context = LocalContext.current
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var showPatchNotesDialog by remember { mutableStateOf(false) }
 
     // Launcher für den Ordner-Picker (Jingle Location)
     val folderPickerLauncher = rememberLauncherForActivityResult(
@@ -393,8 +469,52 @@ fun GeneralOptions(viewModel: GameViewModel, uiState: GameUiState) {
                 Intent.FLAG_GRANT_READ_URI_PERMISSION
             )
             // Speicher den Pfad im ViewModel/UiState (als String)
-            viewModel.updateJinglePath(it.toString(),context)
+            viewModel.updateJinglePath(it.toString(), context)
         }
+    }
+
+    if (showPatchNotesDialog) {
+        AlertDialog(
+            onDismissRequest = { showPatchNotesDialog = false },
+            title = { Text("Patch Notes") },
+            text = {
+                Box(
+                    modifier = Modifier
+                        .height(400.dp)
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    Text(text = PatchNotes.getPatchNotes())
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showPatchNotesDialog = false }) {
+                    Text("Schließen")
+                }
+            }
+        )
+    }
+
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("Wirklich löschen?") },
+            text = { Text("Möchtest du wirklich alle Einträge in der Datenbank löschen? Diese Aktion kann nicht rückgängig gemacht werden.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.clearDatabasePlayerScore()
+                        showDeleteDialog = false
+                    }
+                ) {
+                    Text("Löschen")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) {
+                    Text("Abbrechen")
+                }
+            }
+        )
     }
 
     Column {
@@ -422,7 +542,7 @@ fun GeneralOptions(viewModel: GameViewModel, uiState: GameUiState) {
                     modifier = Modifier.padding(bottom = 12.dp)
                 )
 
-                // --- VIBRATION TOGGLE ---
+                // ... vibration toggle ...
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -445,11 +565,9 @@ fun GeneralOptions(viewModel: GameViewModel, uiState: GameUiState) {
                     )
                 }
 
+                Spacer(Modifier.height(8.dp))
 
-
-                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), thickness = 0.5.dp)
-
-                // --- JINGLE ORDNER PICKER ---
+                // ... jingle picker ...
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -464,16 +582,43 @@ fun GeneralOptions(viewModel: GameViewModel, uiState: GameUiState) {
                         color = MaterialTheme.colorScheme.primary
                     )
                 }
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), thickness = 0.5.dp)
+                Text(
+                    text = "INFO",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(bottom = 12.dp)
+                )
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    text = "App Version 1.13" ,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Button(
+                    onClick = { showPatchNotesDialog = true },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Patch Notes und Dank ansehen")
+                }
 
-
-
+                Spacer(Modifier.height(16.dp))
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), thickness = 0.5.dp)
+                Text(
+                    text = "DATENBANK-EINSTELLUNGEN",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(bottom = 12.dp)
+                )
+                Button(
+                    onClick = { showDeleteDialog = true },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Alle Einträge löschen.")
+                }
             }
         }
-
-        Spacer(Modifier.height(16.dp))
-
-        // --- Clear DB ---
-        Button(onClick = { viewModel.clearDatabasePlayerScore() }) { Text("Alle Einträge löschen.")}
-
     }
 }

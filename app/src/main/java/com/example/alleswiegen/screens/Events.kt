@@ -1,7 +1,9 @@
 package com.example.alleswiegen.screens
 
+import com.example.alleswiegen.GameMode
 import android.content.res.Configuration
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -47,9 +49,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -78,6 +82,10 @@ enum class Methoden(val displayName: String) {
         fun getDisplayNames() = entries.map { it.displayName }
     }
 }
+
+
+
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Events(
@@ -86,18 +94,23 @@ fun Events(
     onNewEvent: () -> Unit = {}
 ) {
 
+    BackHandler {
+        viewModel.navigateTo(Screen.SETUP)
+    }
 
     // UI State for dropdowns and toggles
     var expandedEvent by remember { mutableStateOf(false) }
 
 
     var expandedRating by remember { mutableStateOf(false) }
-    var selectedRatingMethod by remember { mutableStateOf(Methoden.KLASSISCH.displayName) }
+    var expandedGameMode by remember { mutableStateOf(false) }
+    var selectedRatingMethod by rememberSaveable { mutableStateOf(Methoden.KLASSISCH.displayName) }
+    var selectedGameMode by rememberSaveable { mutableStateOf(GameMode.Normal.displayName)}
     var showDialog by remember { mutableStateOf(false) }
     var showQrDialog by remember { mutableStateOf(false) }
     var editingEvent by remember { mutableStateOf<EventData?>(null) }
     val allEvents by viewModel.allEvents.collectAsState(initial = emptyList())
-    var selectedEvent by remember { mutableStateOf("") }
+    var selectedEvent by rememberSaveable { mutableStateOf("") }
     val context = LocalContext.current
     var scannedText by remember { mutableStateOf<String?>(null) }
     var showConfirmDialog by remember { mutableStateOf(false) }
@@ -134,23 +147,28 @@ fun Events(
     }
 
 
-// Sobald allEvents geladen wurde, setzen wir den Default-Wert
+    // Sobald allEvents geladen wurde, setzen wir den Default-Wert
     LaunchedEffect(allEvents) {
-
         if (selectedEvent.isEmpty() && allEvents.isNotEmpty()) {
             selectedEvent = allEvents.first().name
-
         }
-
-
     }
+
     val currentEvent = allEvents.find { it.name == selectedEvent }
-    viewModel.setTimeFilterwithDates(currentEvent?.startTimestamp ?: 0, currentEvent?.endTimestamp ?: 0)
-    val graphList= transformScoresToPlayerRanks(viewModel)
-    val finalResult= getFinalPlayerRanks(graphList)
+
+    // Update Filter when Event changes
+    LaunchedEffect(currentEvent) {
+        viewModel.setTimeFilterwithDates(
+            currentEvent?.startTimestamp ?: 0,
+            currentEvent?.endTimestamp ?: 0
+        )
+    }
+
+    val graphList = transformScoresToPlayerRanks(viewModel, gameMode = selectedGameMode)//Berechent den Zeitlichen Verlauf aller Punkte
+    val finalResult = getFinalPlayerRanks(graphList)//Nimmt jeweils nur den letzten WErt um den Endstand zu haben
     println(currentEvent)
     // State for Ranking vs Graph (0 = Ranking, 1 = Graph)
-    var selectedViewIndex by remember { mutableIntStateOf(0) }
+    var selectedViewIndex by rememberSaveable { mutableIntStateOf(0) }
     val viewOptions = listOf("Ranking", "Graph")
     if (showDialog) {
         EventEditDialog(
@@ -174,9 +192,11 @@ fun Events(
         )
     }
     if (isLandscape){
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            AdvancedPlayerChart(graphList,  selectedRatingMethod)
-        }
+   
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                AdvancedPlayerChart(graphList,  selectedRatingMethod)}
+   
+        
     } else{
 
 
@@ -228,15 +248,15 @@ fun Events(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // --- Dropdown Selectors ---
-            Row(
+            Column(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 // Event Selection
                 ExposedDropdownMenuBox(
                     expanded = expandedEvent,
                     onExpandedChange = { expandedEvent = !expandedEvent },
-                    modifier = Modifier.weight(1f)
+
                 ) {
                     OutlinedTextField(
                         value = selectedEvent,
@@ -260,12 +280,40 @@ fun Events(
                         }
                     }
                 }
+                //GameMode Selection
+                ExposedDropdownMenuBox(
+                    expanded = expandedGameMode,
+                    onExpandedChange = { expandedGameMode = !expandedGameMode },
 
+                ) {
+                    OutlinedTextField(
+                        value = selectedGameMode,
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("GameMode") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedGameMode) },
+                        modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable, true)
+                    )
+                    ExposedDropdownMenu(
+                        expanded = expandedGameMode,
+                        onDismissRequest = { expandedGameMode = false }) {
+                        GameMode.getDisplayNames().forEach { mode ->
+                            DropdownMenuItem(
+                                text = { Text(mode) },
+                                onClick = {
+                                    selectedGameMode = mode
+                                    expandedGameMode= false
+                                }
+                            )
+                        }
+                    }
+                }
+            }
                 // Rating Method Selection
                 ExposedDropdownMenuBox(
                     expanded = expandedRating,
                     onExpandedChange = { expandedRating = !expandedRating },
-                    modifier = Modifier.weight(1f)
+
                 ) {
                     OutlinedTextField(
                         value = selectedRatingMethod,
@@ -289,7 +337,7 @@ fun Events(
                         }
                     }
                 }
-            }
+
 
             // --- View Toggle (Ranking vs Graph) ---
             SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
@@ -364,6 +412,7 @@ fun Events(
                 Icon(Icons.Default.Add, contentDescription = null)
                 Text("NEUES EVENT")
             }
+                Spacer(modifier = Modifier.width(2.dp))
                 Button(
                     onClick = {
                         showQrDialog=true
@@ -374,6 +423,7 @@ fun Events(
                     Icon(Icons.Default.QrCode, contentDescription = null)
 
                 }
+                Spacer(modifier = Modifier.width(2.dp))
                 Button(
                     onClick = {
                         viewModel.navigateTo(Screen.ALL_EVENTS)
@@ -459,7 +509,7 @@ fun RankingItem(score: PlayerRank,method: String) {
             val infoText = when (method){
                    Methoden.KLASSISCH.displayName -> "Klassische Punkte ${score.pointsByErrorClassic}"
                 Methoden.EXXEN.displayName -> "Punkte ohne Fehler durch Exen ${score.pointsByErrorNoExxer} "
-                Methoden.BAGEL.displayName ->"BagelQuote  ${"%.1f".format(score.bagelRate)} Bagel pro Spiel"
+                Methoden.BAGEL.displayName ->" ${"%.1f".format(score.bagelRate)} pro Spiel | Gesamt: ${score.bagels}"
                   Methoden.DURSCHNITTLICHER_FEHLER.displayName ->  "Fehler ${"%.1f".format(score.averageError)}g"
                 else -> "Klassische Punkte ${score.pointsByErrorClassic}"
                 }

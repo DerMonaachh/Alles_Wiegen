@@ -11,7 +11,11 @@ data class Player(
     val position: Int = 0,
     val sipsErrors: List<SipError> = emptyList(),
     val nfcId: String = "",
-    val extraDrunkAccount: Int= 0,){
+    val extraDrunkAccount: Int = 0,
+    val items: List<Item> = emptyList(),
+    val nextErrorMultiplier: Double = 1.0,
+    val itemHit:Int=0
+) {
 
 
 
@@ -61,7 +65,8 @@ enum class Screen {
     WEIGH_AFTER_EXXEN,
     OPTIONS,
     EVENT,
-    ALL_EVENTS
+    ALL_EVENTS,
+    ITEM_HANDLING,
 
 
 
@@ -80,6 +85,39 @@ data class PlayerScoreEntry(
 
 
 )*/
+enum class ItemDistro(val displayName: String) {
+    letzer("Rubberband"),
+    erster("Bleib Unten!"),
+    runden_erster("Runden Erster"),
+    runden_letzter("Runden Letzter"),
+    gleichmasig("Gleichheit");
+
+
+
+    // Hilfsfunktion, um eine Liste für das Dropdown zu bekommen
+    companion object {
+        fun getDisplayNames() = entries.map { it.displayName }
+    }
+}
+
+enum class GameMode(val displayName: String) {
+    Normal("Normal"),
+    Items("Items");
+
+    companion object {
+        fun getDisplayNames() = entries.map { it.displayName }
+        fun fromInt(value: Int): GameMode = when (value) {
+            1 -> Items
+            else -> Normal
+        }
+    }
+    fun toInt(): Int = when (this) {
+        Normal -> 0
+        Items -> 1
+    }
+}
+
+
 
 data class GameUiState(
     val previousScreen: Screen = Screen.SETUP,
@@ -106,6 +144,12 @@ data class GameUiState(
     val SERVICE_UUID: String = "fff0",
     val CHARACTERISTIC_UUID: String = "fff1",
     val lastStoredGameTime: Long = 0,
+    val gameMode: GameMode = GameMode.Normal,
+    val itemVerteilung:String= ItemDistro.runden_erster.displayName,
+    val itemsProRunde:Int=2,
+    val erlaubteItems: List<Int> = AvailableItems.getAllIds()
+
+
 
 
 )

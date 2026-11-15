@@ -93,8 +93,12 @@ fun WeighAfterExxenScreen(
         Button(
             onClick = {
 
+                if (weightDouble!=0){
+                    viewModel.updatePersonalTargetAfterExxen(weightDouble)
+            }else{
+                    Toast.makeText(context,"Gewicht ist leer", Toast.LENGTH_SHORT).show()
+                }
 
-                viewModel.updatePersonalTargetAfterExxen(weightDouble)
             },
             enabled = inputValid,
             modifier = Modifier.fillMaxWidth()

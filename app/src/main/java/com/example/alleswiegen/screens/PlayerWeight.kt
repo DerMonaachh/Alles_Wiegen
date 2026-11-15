@@ -83,12 +83,15 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.WineBar
 
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.example.alleswiegen.components.HapticHelper
 
 import com.example.alleswiegen.components.NfcScannerEffect
 import androidx.core.net.toUri
+import com.example.alleswiegen.GameMode
 
 import com.example.alleswiegen.components.NFCandBluetoothUI
 import com.example.alleswiegen.components.WeiterOderEnde
@@ -140,7 +143,7 @@ fun PlayerWeightingScreen(viewModel: GameViewModel, uiState: GameUiState) {
                     if (uiState.vibrate){
                         hapticHelper.vibrate(50) // Kurz vibrieren
                     }
-                    lastErrorInfo="${detectedPlayer.name}s letzter Fehler: ${detectedPlayer.upcomingError(liveWeight.toInt())} g"
+                    lastErrorInfo=buildLastErrorInfo(detectedPlayer,uiState,liveWeight.toInt())
                     if (detectedPlayer.upcomingError(liveWeight.toIntOrNull() ?: 0) == 0 && uiState.showJingle) {
                         showCelebrationVideo = true
                     }
@@ -155,6 +158,7 @@ fun PlayerWeightingScreen(viewModel: GameViewModel, uiState: GameUiState) {
                 }
             }
         }
+
     }
     if (isLandscape){
         Box(modifier = Modifier.fillMaxSize()) {
@@ -167,6 +171,7 @@ fun PlayerWeightingScreen(viewModel: GameViewModel, uiState: GameUiState) {
                     // --- UI: KOMBINIERTE SCANNER CARD ---
                         NFCandBluetoothUI(uiState, viewModel, liveWeight, detectedPlayer)
                     }
+
                     if (lastErrorInfo.isNotBlank()) {
                         Card(
                             colors = CardDefaults.cardColors(
@@ -219,7 +224,7 @@ fun PlayerWeightingScreen(viewModel: GameViewModel, uiState: GameUiState) {
                                     //currentWeights[player.name] = value
                                     viewModel.updateWeight(value, player.name)
                                     viewModel.onNfcTagDetected("")
-                                    lastErrorInfo="${player.name}s letzter Fehler: ${player.upcomingError(value.toInt())} g"
+                                    lastErrorInfo=buildLastErrorInfo(player,uiState,value.toInt())
                                     if (player.upcomingError(value.toIntOrNull() ?: 0) == 0 && uiState.showJingle) {
                                         showCelebrationVideo = true
                                     }
@@ -233,7 +238,7 @@ fun PlayerWeightingScreen(viewModel: GameViewModel, uiState: GameUiState) {
                                             viewModel.updateWeight(it, player.name)
                                             viewModel.onNfcTagDetected("")
                                             val newValue = it.toIntOrNull() ?: -1
-                                            lastErrorInfo="${player.name}s letzter Fehler: ${player.upcomingError(newValue)} g"
+                                            lastErrorInfo=buildLastErrorInfo(player,uiState,newValue)
                                             if (player.upcomingError(newValue) == 0&& uiState.showJingle) {
                                                 showCelebrationVideo = true
                                             }
@@ -270,6 +275,17 @@ fun PlayerWeightingScreen(viewModel: GameViewModel, uiState: GameUiState) {
         if (uiState.isBluetoothConnected) {
 // --- UI: KOMBINIERTE SCANNER CARD ---
             NFCandBluetoothUI(uiState, viewModel, liveWeight, detectedPlayer)
+        }
+        else{
+
+            Button(onClick = {
+                viewModel.setupBluetooth(context)
+                viewModel.connectBluetooth()
+            }) {
+                Text("Waage Verbinden")
+            }
+
+
         }
         if (lastErrorInfo.isNotBlank()) {
             Card(
@@ -333,7 +349,8 @@ fun PlayerWeightingScreen(viewModel: GameViewModel, uiState: GameUiState) {
                                 //currentWeights[player.name] = value
                                 viewModel.updateWeight(value, player.name)
                                 viewModel.onNfcTagDetected("")
-                                lastErrorInfo="${player.name}s letzter Fehler: ${player.upcomingError(value.toInt())} g"
+                                lastErrorInfo=buildLastErrorInfo(player,uiState,value.toInt())
+
                                 if (player.upcomingError(value.toIntOrNull() ?: 0) == 0 && uiState.showJingle) {
                                     showCelebrationVideo = true
                                 }
@@ -348,7 +365,7 @@ fun PlayerWeightingScreen(viewModel: GameViewModel, uiState: GameUiState) {
 
                                         viewModel.onNfcTagDetected("")
                                         val newValue = it.toIntOrNull() ?: -1
-                                        lastErrorInfo="${player.name}s letzter Fehler: ${player.upcomingError(newValue)} g"
+                                        lastErrorInfo=buildLastErrorInfo(player,uiState,newValue)
                                         if (player.upcomingError(newValue) == 0&& uiState.showJingle) {
                                             showCelebrationVideo = true
                                         }
@@ -456,13 +473,21 @@ fun PlayerWeightingScreen(viewModel: GameViewModel, uiState: GameUiState) {
         )
     }
 }
+fun buildLastErrorInfo(player: com.example.alleswiegen.Player,uiState: GameUiState,newValue:Int):String{
+    var lastErrorInfo="${player.name}s letzter Fehler: ${player.upcomingError(newValue)} g"
+    if (uiState.gameMode== GameMode.Items && player.nextErrorMultiplier!=1.0){
 
+        lastErrorInfo="${player.name}s letzter Fehler: ${player.upcomingError(newValue)} g -> ${player.upcomingError((newValue.toDouble()*player.nextErrorMultiplier).toInt())}"
+    }
+    return lastErrorInfo
+}
 @OptIn(UnstableApi::class)
 @Composable
 fun BagelScreen(videoUri: Uri, audioUri: Uri, onVideoFinished: () -> Unit) {
     val context = LocalContext.current
     val activity = context as? Activity
     val audioManager = remember { context.getSystemService(Context.AUDIO_SERVICE) as AudioManager }
+    var isAudioPlaying by remember { mutableStateOf(true) }
 
     // Fokus-Anfrage Definition (für Android 8.0+)
     val audioFocusRequest = remember {
@@ -490,6 +515,10 @@ fun BagelScreen(videoUri: Uri, audioUri: Uri, onVideoFinished: () -> Unit) {
             addListener(object : Player.Listener {
                 override fun onPlaybackStateChanged(state: Int) {
                     if (state == Player.STATE_ENDED) onVideoFinished()
+                }
+
+                override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                    isAudioPlaying = currentMediaItemIndex == 0
                 }
 
                 override fun onPlayerError(error: PlaybackException) {
@@ -564,6 +593,18 @@ fun BagelScreen(videoUri: Uri, audioUri: Uri, onVideoFinished: () -> Unit) {
             },
             modifier = Modifier.fillMaxSize()
         )
+
+        if (isAudioPlaying) {
+            Text(
+                text = "BAGEL!",
+                style = MaterialTheme.typography.displayLarge.copy(
+                    fontSize = 100.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = Color.White,
+                    textAlign = TextAlign.Center
+                )
+            )
+        }
     }
 }
 /*
