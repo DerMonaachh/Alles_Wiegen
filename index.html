@@ -255,7 +255,7 @@
   <!-- Titelbereich -->
   <div class="hero">
     <h1>Alles Wiegen</h1>
-    <p>Projektdokumentation, App-Anleitung und Hardware-Übersicht.</p>
+    <p>App-Anleitung und Hardware-Übersicht.</p>
   </div>
 
   <!-- Inhaltsverzeichnis -->
@@ -293,7 +293,9 @@
     <section id="zusammenfassung">
       <h1 class="section-h1">Zusammenfassung</h1>
       <p>
-        Hier kommt eine kurze Übersicht über <strong>Alles Wiegen</strong> hin: Worum geht es bei dem Projekt, wie spielen App und Hardware zusammen und für wen ist es gedacht?
+        Hier kommt eine kurze Übersicht über <strong>Alles Wiegen</strong>. Das ganze ist als Trinkspiel mit dem Namen Bier Wiegen entstanden, aber es hat sich tatsächlich zu "Alles Wiegen" entwickelt. 
+        Wir haben schon mit Bier, Wein, Wasser und auch Gurken gespiel - wiegt was immer ihr wollt.
+        
       </p>
     </section>
 
@@ -301,17 +303,75 @@
     <section id="app-nutzung">
       <h1 class="section-h1">App-Nutzung</h1>
       <p>
-        Alle Schritte von der ersten Verbindung mit der Waage bis zum Teilen der Spielstände.
+        Im Folgenden wird die Einrichtung der Bluetooth Waage und der Ablauf der verschiedenen Siel Modi erklärt. 
+        Die App ist darauf ausgelegt mit einer kompatiblen Waage und entsprechenden NFC verwendet zu werden. Du kannst auch eine klassiche Küchenwaage verwenden und die Werte per Hand eintragen.
+        Oder auch nur die Bluetooth Waage und keine NFC Chips, die entsprechenden Unterschiede bei der Nutzun werden ensprechend erklärt.
+
+        Quer Modus
       </p>
 
       <h2 id="waage-einrichten">Waage einrichten</h2>
       <p>
-        Beschreibung, wie die Waage eingeschaltet, gekoppelt (z. B. via Bluetooth/WLAN) und kalibriert wird.
+        Um die Bluetooth Funktionen der Waage zu nutzen, musst du die MAC Adresse dein Bluetooth Adresse herrausfinden. 
+        Du kannst die Adresse mit Apps wie "nRF Connec" herrausfinden. Die Adresse hat typischerweise die Form "FF:03:00:6A:F5:06".
+        Eine Liste kompatibler Waagen findest du im Kapitel Hardware.
+        Nachdem du die Adresse herrausgefunden hast, musst du sie in der App in den Bluetooth Optionen Eintragen.
+        Servide UUID und Characteristic UUID bleiben in der regel unverändert.
+        Das Eintragen der Waage MAC Adress ist nur einmalig notwendig. Wenn du (und deine Freunde) mehrer Waagen verwenden, kannst du den Verschiedenen Waagen einen Namen geben und entsprechen speichern und laden.
+        BILD
+        
       </p>
 
       <h2 id="im-spiel">Im Spiel</h2>
       <p>
-        Allgemeiner Ablauf einer Spielrunde in der App.
+        Wenn du eine Bluetooth Waage verwendest klicke auf "Verbinden", eine erfolgreiche Verbindung wird entsprechend durch eine grüne Farbe signalisiert.
+        
+        Das normale Spiel läuft folgender maßen ab:
+        
+        1️⃣ Spieler-Setup & Startgewicht 
+    
+        Namen eintragen oder über "Letzte laden" aus alten Runden wiederherstellen.
+        Starte das Spiel mit dem Button "Wiegen"
+
+        Tragt die Initial Gewichte aller Spieler ein.
+        Normale Waage: Nutze die Eingabefelder um die Werte in Gramm einzutragen.
+        Bluetooth Waage - kein NFC: Nutze den Button X, um das aktuell gemessene Gewicht automatisch für den Aktuellen Spieler einzutragen.
+        Bluetooth Waage - mit NFC: 
+        Jeder Spieler stellt sein volles Glas auf die Waage.
+        1.) Halte den NFC-Chip des Spielers an die NFC-Antenne des Smartphones.
+        2.) Das Smartphone vibriert (lässt sich deaktiviern, siehe dazu Kapitel Optionen) kurz und zeigt die ID des NFC Chips an.
+        3.) Stelle das Getränk auf die 
+        ◦
+        Übernahme des Werts: Tippe auf das ⚖️ Waagen-Symbol beim Spieler oder trage den Wert manuell ein.
+        ◦
+        Wenn das Häkchen ✅ grün bei NFC zugewiesen erscheint, ist der Chip dauerhaft mit diesem Spieler für die Runde verknüpft.
+        
+        2️⃣ Zielwert festlegen 
+        
+        Der führende Spieler (der bisher am meisten getrunken hat) bestimmt das Rundenziel in Gramm/Millilitern (z. B. 50 g).
+        •
+        Das System berechnet für jeden Spieler ein individuelles persönliches Ziel, damit alle synchron trinken.
+        3️⃣ Trinken & Wiegen (Player Weighing)
+        •
+        Alle Spieler trinken ihren Schluck.
+        •
+        Gläser nacheinander auf die Waage stellen und per NFC-Scan oder Tippen auf ⚖️ das aktuelle Gewicht erfassen.
+        •
+        Die App errechnet sofort die Differenz (Fehler) in Gramm.
+        4️⃣ Auswertung & Strafe
+        •
+        Schluckspecht (Höchster Fehler): Muss einen Strafschluck trinken.
+        •
+        Perfekt getroffen (0 g Fehler / "BAGEL!"):
+        ◦
+        Es ertönt der Jubel-Sound & das Bagel-Video wird abgespielt! 🥯
+        ◦
+        Ist die Option "Exen bei 0" aktiv, darf das Opfer ein beliebiges anderes Opfer zum Exxen bestimmen!
+        •
+        Bester Schluck (Minimaler Fehler): Darf einen Schluck an Mitspieler verteilen.
+        5️⃣ Nächste Runde oder Spielende
+•
+Nach der Auswertung klickt ihr auf Noch eine Runde oder auf Spiel Beenden, um die Siegerehrung anzuzeigen.
       </p>
 
       <h3 id="standard-spiel">Standard-Spiel</h3>
