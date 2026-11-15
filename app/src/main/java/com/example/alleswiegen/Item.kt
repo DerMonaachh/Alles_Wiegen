@@ -1,0 +1,97 @@
+package com.example.alleswiegen
+
+import androidx.annotation.DrawableRes
+
+
+
+data class Item(
+    val id: Int,
+    val name: String,
+    @DrawableRes val imageRes: Int,
+    val rarity: Int,
+    val multiplikator:Double=0.0,
+    val wert: Int=0,
+    val beschreibung:String="",
+    val target: Boolean =false
+
+
+
+){
+    fun buildBeschreibung(): String{
+        var runningBeschreibung=beschreibung
+
+        runningBeschreibung=runningBeschreibung.replace("%wert%",wert.toString())
+
+        runningBeschreibung= runningBeschreibung.replace("%multi%",multiplikator.toString())
+
+
+        return runningBeschreibung
+    }
+}
+
+object AvailableItems {
+    val items = listOf(
+        Item(
+            id = 1,
+            name = "Wein Panzer",
+            imageRes = R.drawable.wein, // Platzhalter
+            rarity = 2,
+            wert = 15,
+            beschreibung = "Wähle einen Spieler aus der einen zusätzlichen Fehler von %wert% bekommt.",
+            target=true
+        ),
+        Item(
+            id = 2,
+            name = "Blue Shell",
+            imageRes = R.drawable.blue, // Platzhalter
+            rarity = 3,
+            wert = 15,
+            multiplikator = 1.5,
+            beschreibung = "Der Fehler des Führenden wird beim nächsten mal ver %multi%-facht und er bekommt sofort einen zusätzlichen Fehler von %wert%.",
+
+        ),
+        Item(
+            id = 3,
+            name = "Pilz-Bagel",
+            imageRes = R.drawable.bagel_pilz, // Platzhalter
+            rarity = 2,
+            beschreibung = "Dein höchste bisheriger Fehler wird auf 0 gesetzt."
+        ),
+        Item(
+            id = 4,
+            name = "Blitz",
+            imageRes = R.drawable.blitz, // Platzhalter
+            rarity = 3,
+            wert=10,
+            beschreibung = "Alle anderen Spieler bekommen einen zusätzlichen Fehler von %wert%."
+        ),
+        Item(
+            id = 5,
+            name = "Kristallkugel",
+            imageRes = R.drawable.kristall_kugel, // Platzhalter
+            rarity = 1,
+            beschreibung = "Du darfst beim nächsten mal einmal zwichen Wiegen"
+        ),
+        Item(
+            id = 6,
+            name = "Gurken-Boy",
+            imageRes = R.drawable.gurken_panzer, // Platzhalter
+            rarity = 1,
+            beschreibung = "Wählen einen Spieler der einen Strafschluck trinken muss.",
+            target = true
+        ),
+        Item(
+            id = 7,
+            name = "Gurken-Gatling",
+            imageRes = R.drawable.gurken_gatling, // Platzhalter
+            rarity = 2,
+            beschreibung = "Alle Spieler außer dir müssen einen Strafschluck trinken.",
+            target = false
+        ),
+
+    )
+
+    fun getAllIds(): List<Int> {
+        return items.map { it.id }
+    }
+}
