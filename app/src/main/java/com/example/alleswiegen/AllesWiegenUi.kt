@@ -47,6 +47,20 @@ fun AllesWiegenApp(viewModel: GameViewModel = viewModel()) {
     val uiState by viewModel.uiState.collectAsState()
     viewModel.setTimeFilter(30)
 
+    if (uiState.showStartupMessage && uiState.showStartupDialog) {
+        AlertDialog(
+            onDismissRequest = { viewModel.dismissStartupDialog() },
+            title = { Text("Hinweis") },
+            text = {
+                Text("Nutze die App verantwortungsvoll und trinke nur in moderaten Mengen, auch eine Runde Wasser-Wiegen kann nicht schaden.\nDu findest weitere Infos zu der App in den Optionen, dort kannst du auch diese Nachricht deaktivieren")
+            },
+            confirmButton = {
+                TextButton(onClick = { viewModel.dismissStartupDialog() }) {
+                    Text("OK")
+                }
+            }
+        )
+    }
 
     Scaffold(
         topBar = {

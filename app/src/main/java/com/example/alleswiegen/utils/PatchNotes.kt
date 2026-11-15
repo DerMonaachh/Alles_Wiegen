@@ -20,7 +20,11 @@ object PatchNotes {
             bulletPoint("Dank geht raus an Nico, Klari und Rici fürs rege Testen ( auf Festivals und daheim).")
             bulletPoint("Dank geht raus and David für die Idee mit den NFC-Tags, auch wenns nur Trashtalk war.")
 
-
+            append("\n")
+            versionHeader("Version 1.14")
+            bulletPoint("Neue Item Logos und personalisierbare Items")
+            bulletPoint("Score besser lesbar im Dark-Mode")
+            bulletPoint("Nachricht am Spiel-Anfang")
             append("\n")
             versionHeader("Version 1.13")
             bulletPoint("Infos zu Items und Punkte Berechnung in Optionen eingefügt")

@@ -1026,6 +1026,7 @@ class GameViewModel (private val repository: PlayerScoreRepository) : ViewModel(
         val vibrate = (prefs.getString("vibration", "true") ?: "true").toBoolean()
         val jingle = (prefs.getString("jingle", "true") ?: "true").toBoolean()
         val jingleLocation = prefs.getString("jingleLocation", "") ?: ""
+        val showStartupMessage = (prefs.getString("show_startup_message", "true") ?: "true").toBoolean()
 
         val itemOverrides = mutableMapOf<Int, ItemOverride>()
         AvailableItems.getAllIds().forEach { id ->
@@ -1050,8 +1051,22 @@ class GameViewModel (private val repository: PlayerScoreRepository) : ViewModel(
             vibrate = vibrate,
             showJingle = jingle,
             jingleLocation = jingleLocation,
+            showStartupMessage = showStartupMessage,
+            showStartupDialog = showStartupMessage,
             itemOverrides = itemOverrides,
         ) }
+    }
+
+    fun toggleStartupMessage(enabled: Boolean, context: Context) {
+        _uiState.update { it.copy(showStartupMessage = enabled, showStartupDialog = if (enabled) true else it.showStartupDialog) }
+        val prefs = context.getSharedPreferences("AllesWiegenPrefs", Context.MODE_PRIVATE)
+        prefs.edit {
+            putString("show_startup_message", enabled.toString())
+        }
+    }
+
+    fun dismissStartupDialog() {
+        _uiState.update { it.copy(showStartupDialog = false) }
     }
 
     // Neue Funktion zum Ändern und Speichern der Adresse:

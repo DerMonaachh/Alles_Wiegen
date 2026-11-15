@@ -154,7 +154,9 @@ data class GameUiState(
     val itemVerteilung:String= ItemDistro.runden_erster.displayName,
     val itemsProRunde:Int=2,
     val erlaubteItems: List<Int> = AvailableItems.getAllIds(),
-    val itemOverrides: Map<Int, ItemOverride> = emptyMap()
+    val itemOverrides: Map<Int, ItemOverride> = emptyMap(),
+    val showStartupMessage: Boolean = true,
+    val showStartupDialog: Boolean = true
 ) {
     fun getEffectiveItems(): List<Item> {
         return AvailableItems.items.map { item ->
