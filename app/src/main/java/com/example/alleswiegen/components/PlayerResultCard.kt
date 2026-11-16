@@ -1,6 +1,7 @@
 package com.example.alleswiegen.components
 
 import android.R
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Scale
@@ -179,8 +181,9 @@ fun PlayerResultCard(
 
         colors = CardDefaults.cardColors(
             containerColor = if (isError) MaterialTheme.colorScheme.errorContainer
-            else MaterialTheme.colorScheme.surface
+            else MaterialTheme.colorScheme.background
         ),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.onPrimaryContainer),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
 
@@ -188,8 +191,10 @@ fun PlayerResultCard(
                 modifier = Modifier
                     .padding(2.dp)
                     .fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
             ) {
+                Spacer(modifier= Modifier.width(10.dp))
                 InnerResultCadd(releventError, releventAbsolutError, player, liveWeight, onCaptured, round, landscape,inputField)
 
             }

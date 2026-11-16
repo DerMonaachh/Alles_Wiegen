@@ -247,7 +247,7 @@ fun InnerResultCadd(releventError: Int, releventAbsolutError: Int, player: Playe
         verticalAlignment = Alignment.CenterVertically) {IconButton(
         onClick = { onCaptured(liveWeight) },
         colors = IconButtonDefaults.filledIconButtonColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer
+            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
         ),
         modifier = Modifier.padding(horizontal = 8.dp)
     ) {

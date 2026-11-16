@@ -197,11 +197,8 @@ fun Events(
                 AdvancedPlayerChart(graphList,  selectedRatingMethod)}
    
         
-    } else{
-
-
-    Scaffold(
-        topBar = {
+    } else {
+        Column(modifier = Modifier.fillMaxSize()) {
             TopAppBar(
                 title = { Text("Events & Statistik") },
                 navigationIcon = {
@@ -238,11 +235,9 @@ fun Events(
                     }
                 }
             )
-        }
-    ) { innerPadding ->
         Column(
             modifier = Modifier
-                .padding(innerPadding)
+                .fillMaxSize()
                 .fillMaxSize()
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -438,7 +433,8 @@ fun Events(
             }
 
         }
-    }}
+    }
+}
     if (showQrDialog) {
         LaunchedEffect(Unit) {
             startScanner()

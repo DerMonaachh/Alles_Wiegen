@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -45,6 +46,7 @@ import com.example.alleswiegen.screens.WeighBeforeExxenScreen
 @Composable
 fun AllesWiegenApp(viewModel: GameViewModel = viewModel()) {
     val uiState by viewModel.uiState.collectAsState()
+    val uriHandler = LocalUriHandler.current
     viewModel.setTimeFilter(30)
 
     if (uiState.showStartupMessage && uiState.showStartupDialog) {
@@ -52,13 +54,25 @@ fun AllesWiegenApp(viewModel: GameViewModel = viewModel()) {
             onDismissRequest = { viewModel.dismissStartupDialog() },
             title = { Text("Hinweis") },
             text = {
-                Text("Nutze die App verantwortungsvoll und trinke nur in moderaten Mengen, auch eine Runde Wasser-Wiegen kann nicht schaden.\nDu findest weitere Infos zu der App in den Optionen, dort kannst du auch diese Nachricht deaktivieren")
+                Column {
+                    Text("Nutze die App verantwortungsvoll und trinke nur in moderaten Mengen, auch eine Runde Wasser-Wiegen kann nicht schaden.\nDu findest weitere Infos zu der App in den Optionen (Kompatible Hardware, alle Feature etc). \nDort kannst du auch diese Nachricht deaktivieren.")
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        text = "📖 Spieleanleitung online öffnen",
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.clickable {
+                            uriHandler.openUri("https://dermonaachh.github.io/Alles_Wiegen/#standard-spiel")
+                        }
+                    )
+                }
             },
             confirmButton = {
                 TextButton(onClick = { viewModel.dismissStartupDialog() }) {
                     Text("OK")
                 }
-            }
+            },
+
         )
     }
 

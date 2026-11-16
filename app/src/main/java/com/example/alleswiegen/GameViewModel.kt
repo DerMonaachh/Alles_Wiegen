@@ -323,20 +323,69 @@ class GameViewModel (private val repository: PlayerScoreRepository) : ViewModel(
 
     fun buildLiveGameJson(state: GameUiState = uiState.value): String {
         val spielBeendet = state.gameEnds || state.currentScreen == Screen.RANKING
-        val sortedPlayers = state.players.sortedBy { if (it.position > 0) it.position else Int.MAX_VALUE }
 
-        val playersJson = sortedPlayers.mapIndexed { index, player ->
-            val pos = if (player.position > 0) player.position else (index + 1)
-            val id = index + 1
+        data class TempPlayerStats(
+            val id: Int,
+            val name: String,
+            val totalDrunk: Int,
+            val personalTarget: Int,
+            val totalError: Int,
+            val lastError: Int,
+            val storedPosition: Int
+        )
+
+        val liveStatsList = state.players.mapIndexed { index, player ->
+            val weightStr = state.currentWeights[player.name]
+            val enteredWeight = weightStr?.toIntOrNull()
+
+            val displayDrunk: Int
+            val displayAbsError: Int
+            val displayLastError: Int
+
+            if (enteredWeight != null && enteredWeight >= 0) {
+                val drunkThisRound = (player.currentWeight - enteredWeight).coerceAtLeast(0)
+                val upcomingLastError = drunkThisRound - player.personalTarget
+                val rawError = abs(upcomingLastError)
+                val errorThisRound = (rawError * player.nextErrorMultiplier).toInt()
+
+                displayDrunk = player.totalDrunk + drunkThisRound
+                displayLastError = upcomingLastError
+                displayAbsError = player.totalError + errorThisRound
+            } else {
+                displayDrunk = player.totalDrunk
+                displayLastError = player.lastError
+                displayAbsError = player.totalError
+            }
+
+            TempPlayerStats(
+                id = index + 1,
+                name = player.name,
+                totalDrunk = displayDrunk,
+                personalTarget = player.personalTarget,
+                totalError = displayAbsError,
+                lastError = displayLastError,
+                storedPosition = if (player.position > 0) player.position else (index + 1)
+            )
+        }
+
+        val hasAnyEnteredWeight = state.currentWeights.values.any { it.toIntOrNull() != null }
+        val sortedStats = if (hasAnyEnteredWeight) {
+            liveStatsList.sortedBy { it.totalError }
+        } else {
+            liveStatsList.sortedBy { it.storedPosition }
+        }
+
+        val playersJson = sortedStats.mapIndexed { rankIndex, stats ->
+            val pos = if (hasAnyEnteredWeight) (rankIndex + 1) else stats.storedPosition
             """
             {
-              "id": $id,
-              "name": "${escapeJson(player.name)}",
+              "id": ${stats.id},
+              "name": "${escapeJson(stats.name)}",
               "position": $pos,
-              "gesamtGetrunken": "${player.totalDrunk} g",
-              "persoenlichesZiel": "${player.personalTarget} g",
-              "absoluterFehler": "${player.totalError} g",
-              "letzterFehler": "${player.lastError} g"
+              "gesamtGetrunken": "${stats.totalDrunk} g",
+              "persoenlichesZiel": "${stats.personalTarget} g",
+              "absoluterFehler": "${stats.totalError} g",
+              "letzterFehler": "${stats.lastError} g"
             }
             """.trimIndent()
         }.joinToString(separator = ",\n")

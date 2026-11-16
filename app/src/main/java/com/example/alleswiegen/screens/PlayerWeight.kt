@@ -81,6 +81,7 @@ import kotlin.text.toDoubleOrNull
 import androidx.compose.material.icons.Icons
 
 import androidx.compose.material.icons.filled.WineBar
+import androidx.compose.ui.input.pointer.motionEventSpy
 
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.style.TextAlign
@@ -281,7 +282,7 @@ fun PlayerWeightingScreen(viewModel: GameViewModel, uiState: GameUiState) {
             Button(onClick = {
                 viewModel.setupBluetooth(context)
                 viewModel.connectBluetooth()
-            }) {
+            }, modifier = Modifier.fillMaxWidth()) {
                 Text("Waage Verbinden")
             }
 

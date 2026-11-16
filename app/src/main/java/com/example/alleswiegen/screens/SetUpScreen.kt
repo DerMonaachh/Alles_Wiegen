@@ -5,7 +5,9 @@ import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,6 +34,7 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
@@ -74,38 +77,40 @@ import com.example.alleswiegen.ItemDistro
 import com.example.alleswiegen.Screen
 import com.example.alleswiegen.components.ServerQrDialog
 
-import android.media.AudioAttributes
-
-import android.os.VibratorManager
-import androidx.compose.ui.modifier.modifierLocalConsumer
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SetupScreen(viewModel: GameViewModel, uiState: GameUiState) {
     var nameInput by remember { mutableStateOf("") }
     var showPreviousPlayers by remember { mutableStateOf(false) }
-    var showBluetoothSettings by remember { mutableStateOf(false) }
     var expandedGameMode by remember { mutableStateOf(false) }
     var expandedItemDistro by remember { mutableStateOf(false) }
     var showGameSettings by remember { mutableStateOf(false) }
+    var showHexCode by remember { mutableStateOf(false) }
     val context = LocalContext.current
-
-
-
-
-
 
     Column(modifier = Modifier
         .fillMaxSize()
         .padding(16.dp)) {
 
+        // Bluetooth Status Card
         Card(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .combinedClickable(
+                    onClick = {},
+                    onDoubleClick = {
+                        if (uiState.isBluetoothConnected) {
+                            showHexCode = !showHexCode
+                        }
+                    }
+                ),
+            shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(
-                containerColor = if (uiState.isBluetoothConnected) Color(0xFF2E7D32) else Color(0xFFB71C1C),
-                contentColor = Color.White
-            )
+                containerColor = if (uiState.isBluetoothConnected) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surfaceVariant,
+                contentColor = if (uiState.isBluetoothConnected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
         ) {
             Row(
                 modifier = Modifier.padding(16.dp),
@@ -114,32 +119,53 @@ fun SetupScreen(viewModel: GameViewModel, uiState: GameUiState) {
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = if (uiState.isBluetoothConnected) "Verbunden ✅" else "Nicht verbunden ❌",
+                        text = if (uiState.isBluetoothConnected) "Waage Verbunden ✅" else "Waage Nicht Verbunden ❌",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
                     if (uiState.isBluetoothConnected) {
+                        Spacer(Modifier.height(2.dp))
                         Text("Aktueller Wert: ${viewModel.liveWeight} g", style = MaterialTheme.typography.bodyLarge)
+                        if (showHexCode) {
+                            Spacer(Modifier.height(4.dp))
+                            Text(
+                                text = "Hex: ${viewModel.rawDataString.ifEmpty { "Keine Daten" }}",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.8f)
+                            )
+                        }
                     } else {
-                        Text("Bitte Waage einschalten, MAC Adresse eingeben und koppeln", style = MaterialTheme.typography.bodySmall)
+                        Spacer(Modifier.height(2.dp))
+                        Text("Bitte Waage koppeln", style = MaterialTheme.typography.bodySmall)
                     }
                 }
-                Button(onClick = { viewModel.setupBluetooth(context)
-                    viewModel.connectBluetooth() }) {
-                    Text(if (uiState.isBluetoothConnected) "Neu verbinden" else "Verbinden")
+                Button(
+                    onClick = {
+                        viewModel.setupBluetooth(context)
+                        viewModel.connectBluetooth()
+                    },
+                    modifier = Modifier.width(140.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        //contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                ) {
+                    Text(if (uiState.isBluetoothConnected) "Neu verbinden" else "Verbinden", maxLines = 1)
                 }
             }
-
         }
 
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(10.dp))
 
+        // Web Server Status Card
         Card(
             modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(
-                containerColor = if (uiState.isServerRunning) Color(0xFF1565C0) else MaterialTheme.colorScheme.surfaceVariant,
-                contentColor = if (uiState.isServerRunning) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
-            )
+                containerColor = if (uiState.isServerRunning) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surfaceVariant,
+                contentColor = if (uiState.isServerRunning) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
             Row(
                 modifier = Modifier.padding(16.dp),
@@ -148,29 +174,38 @@ fun SetupScreen(viewModel: GameViewModel, uiState: GameUiState) {
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = if (uiState.isServerRunning) "Web-Server Aktiv 🌐" else "Web-Server Ausgeschaltet 🌐",
+                        text = if (uiState.isServerRunning) "Web-Server Aktiv 🌐" else "Web-Server Inaktiv 🌐",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
+                    Spacer(Modifier.height(2.dp))
                     Text(
-                        text = if (uiState.isServerRunning) uiState.serverIpUrl else "Live-Spielstand per WLAN/Hotspot teilen",
+                        text = if (uiState.isServerRunning) "Spieler können beitreten" else "Tippe auf Server erstellen",
                         style = MaterialTheme.typography.bodySmall
                     )
                 }
-                Button(onClick = {
-                    if (uiState.isServerRunning) {
-                        viewModel.showServerQrDialog()
-                    } else {
-                        viewModel.startServer(context)
-                    }
-                }) {
-                    Text(if (uiState.isServerRunning) "QR Code" else "Server erstellen")
+                Button(
+                    onClick = {
+                        if (uiState.isServerRunning) {
+                            viewModel.showServerQrDialog()
+                        } else {
+                            viewModel.startServer(context)
+                        }
+                    },
+                    modifier = Modifier.width(140.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        //contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                ) {
+                    Text(if (uiState.isServerRunning) "QR Code" else "Erstellen", maxLines = 1)
                 }
             }
         }
 
         Spacer(Modifier.height(16.dp))
 
+        // Game Mode Selection & Settings Toggle Row
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -187,7 +222,7 @@ fun SetupScreen(viewModel: GameViewModel, uiState: GameUiState) {
                     readOnly = true,
                     label = { Text("Spielmodus") },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedGameMode) },
-                    modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable, true),
+                    modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable, true).fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp)
                 )
                 ExposedDropdownMenu(
@@ -209,30 +244,35 @@ fun SetupScreen(viewModel: GameViewModel, uiState: GameUiState) {
             Button(
                 onClick = { showGameSettings = !showGameSettings },
                 shape = RoundedCornerShape(12.dp),
-                modifier = Modifier.height(56.dp)
+                modifier = Modifier.height(56.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                )
             ) {
                 Icon(Icons.Default.Settings, contentDescription = "Einstellungen")
             }
         }
 
+        // Animated Game Settings Expandable Card
         AnimatedVisibility(visible = showGameSettings) {
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp),
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f)
                 )
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    Text("Spiel-Einstellungen", style = MaterialTheme.typography.titleSmall)
+                    Text("Spiel-Einstellungen", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                     Spacer(Modifier.height(8.dp))
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clip(androidx.compose.foundation.shape.RoundedCornerShape(8.dp)) // Clip für den Ripple-Effekt
-                            .clickable { viewModel.toggleExenByNull(!uiState.exenByNull) } // Ganze Zeile klickbar
+                            .clip(RoundedCornerShape(8.dp))
+                            .clickable { viewModel.toggleExenByNull(!uiState.exenByNull) }
                             .padding(vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
@@ -243,13 +283,10 @@ fun SetupScreen(viewModel: GameViewModel, uiState: GameUiState) {
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.SemiBold
                             )
-
                         }
-
-                        // Der Switch
                         Switch(
                             checked = uiState.exenByNull,
-                            onCheckedChange = null, // Auf null, da clickable in der Row das übernimmt
+                            onCheckedChange = null,
                             thumbContent = if (uiState.exenByNull) {
                                 {
                                     Icon(
@@ -263,6 +300,7 @@ fun SetupScreen(viewModel: GameViewModel, uiState: GameUiState) {
                     }
 
                     if (uiState.gameMode == GameMode.Items) {
+                        Spacer(Modifier.height(8.dp))
                         ExposedDropdownMenuBox(
                             expanded = expandedItemDistro,
                             onExpandedChange = { expandedItemDistro = !expandedItemDistro },
@@ -311,7 +349,7 @@ fun SetupScreen(viewModel: GameViewModel, uiState: GameUiState) {
                         Text("Erlaubte Items", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
                         Spacer(Modifier.height(4.dp))
 
-                        Box(modifier = Modifier.heightIn(max = 200.dp)) {
+                        Box(modifier = Modifier.heightIn(max = 180.dp)) {
                             LazyColumn {
                                 items(uiState.getEffectiveItems()) { item ->
                                     Row(
@@ -341,56 +379,21 @@ fun SetupScreen(viewModel: GameViewModel, uiState: GameUiState) {
             }
         }
 
+        Spacer(Modifier.height(12.dp))
 
-
-
-        // Sektion: Spielregeln / Optionen
-
-
-        /*Text("Spieler Setup", style = MaterialTheme.typography.headlineSmall)
-        Spacer(Modifier.height(8.dp))
-
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            OutlinedTextField(
-                value = nameInput,
-                onValueChange = { nameInput = it },
-                label = { Text("Name") },
-                modifier = Modifier.weight(1f),
-                singleLine = true
-            )
-            IconButton(onClick = { if (nameInput.isNotBlank()) { viewModel.addPlayer(nameInput); nameInput = "" } }) {
-                Icon(Icons.Default.Add, contentDescription = "Zufügen")
-            }
-            IconButton(onClick = { showPreviousPlayers = true }) {
-                Icon(Icons.Default.Refresh, contentDescription = "Letzte Spieler")
-            }
-        }
-
-        LazyColumn(modifier = Modifier
-            .weight(1f)
-            .padding(vertical = 8.dp)) {
-            items(uiState.players) { player ->
-                ListItem(
-                    headlineContent = { Text(player.name) },
-                    trailingContent = {
-                        IconButton(onClick = { viewModel.removePlayer(player.name) }) {
-                            Icon(Icons.Default.Delete, contentDescription = "Löschen")
-                        }
-                    }
-                )
-            }
-        }*/
+        // Players Card Section
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(1f), // Nimmt den restlichen Platz ein
+                .weight(1f),
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
-            )
+                containerColor = MaterialTheme.colorScheme.background
+            ),
+            border = BorderStroke(1.dp, Color.White),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
-                // Überschrift mit Spieleranzahl
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -398,27 +401,27 @@ fun SetupScreen(viewModel: GameViewModel, uiState: GameUiState) {
                 ) {
                     Text(
                         text = "SPIELER (${uiState.players.size})",
-                        style = MaterialTheme.typography.labelMedium,
+                        style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
                     )
-                    // Button für letzte Spieler (History)
                     TextButton(onClick = { showPreviousPlayers = true }) {
                         Icon(
                             imageVector = Icons.Default.Refresh,
                             contentDescription = null,
-                            modifier = Modifier.size(18.dp) // Hier wird die Größe richtig gesetzt
+                            modifier = Modifier.size(18.dp)
                         )
                         Spacer(Modifier.size(4.dp))
                         Text("Letzte laden", style = MaterialTheme.typography.labelLarge)
                     }
                 }
 
-                // Eingabefeld
+                Spacer(Modifier.height(4.dp))
+
                 OutlinedTextField(
                     value = nameInput,
                     onValueChange = { nameInput = it },
-                    label = { Text("Neuer Spieler") },
+                    label = { Text("Neuer Spieler Name") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     shape = RoundedCornerShape(12.dp),
@@ -440,9 +443,7 @@ fun SetupScreen(viewModel: GameViewModel, uiState: GameUiState) {
 
                 Spacer(Modifier.height(12.dp))
 
-                // Spielerliste
                 if (uiState.players.isEmpty()) {
-                    // Empty State
                     Column(
                         modifier = Modifier.fillMaxSize(),
                         verticalArrangement = Arrangement.Center,
@@ -460,28 +461,28 @@ fun SetupScreen(viewModel: GameViewModel, uiState: GameUiState) {
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         items(uiState.players) { player ->
-                            // Stylischerer Listeneintrag
                             Surface(
                                 color = MaterialTheme.colorScheme.surface,
                                 shape = RoundedCornerShape(12.dp),
-                                tonalElevation = 2.dp
+                                tonalElevation = 2.dp,
+                                border = BorderStroke(1.dp, Color.White)
                             ) {
                                 ListItem(
                                     headlineContent = {
                                         Text(player.name, fontWeight = FontWeight.Medium)
                                     },
                                     leadingContent = {
-                                        // Ein kleiner Avatar oder Kreis mit Initialen wirkt Wunder
                                         Surface(
-                                            modifier = Modifier.size(32.dp),
+                                            modifier = Modifier.size(36.dp),
                                             color = MaterialTheme.colorScheme.primaryContainer,
-                                            shape = RoundedCornerShape(8.dp)
+                                            shape = RoundedCornerShape(10.dp)
                                         ) {
                                             Box(contentAlignment = Alignment.Center) {
                                                 Text(
                                                     player.name.take(1).uppercase(),
-                                                    style = MaterialTheme.typography.labelLarge,
-                                                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                                                    style = MaterialTheme.typography.titleMedium,
+                                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                                    fontWeight = FontWeight.Bold
                                                 )
                                             }
                                         }
@@ -491,7 +492,7 @@ fun SetupScreen(viewModel: GameViewModel, uiState: GameUiState) {
                                             Icon(
                                                 Icons.Default.Delete,
                                                 contentDescription = "Löschen",
-                                                tint = MaterialTheme.colorScheme.error.copy(alpha = 0.7f),
+                                                tint = MaterialTheme.colorScheme.error.copy(alpha = 0.8f),
                                                 modifier = Modifier.size(20.dp)
                                             )
                                         }
@@ -504,45 +505,48 @@ fun SetupScreen(viewModel: GameViewModel, uiState: GameUiState) {
             }
         }
 
+        Spacer(Modifier.height(16.dp))
 
-        Row(horizontalArrangement = Arrangement.SpaceBetween) {
+        // Bottom Navigation Actions
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
             Button(
-                onClick = {
-
-                    viewModel.navigateTo(Screen.OPTIONS)
-                    // val vibrationEffect = VibrationEffect.createOneShot(100, VibrationEffect.DEFAULT_AMPLITUDE)
-
-                    // HIER DIE ÄNDERUNG: Wir übergeben die audioAttributes mit!
-                    // vibrator.vibrate(vibrationEffect, audioAttributes)
-                    //viewModel.navigateTo(Screen.OPTIONS)
-                },
-                modifier = Modifier.weight(0.33f),
-
-                ) {
+                onClick = { viewModel.navigateTo(Screen.OPTIONS) },
+                modifier = Modifier.weight(1f),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    //contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+            ) {
                 Text("Optionen")
             }
-            Spacer(modifier = Modifier.width(2.dp))
             Button(
                 onClick = { viewModel.navigateTo(Screen.EVENT) },
-                modifier = Modifier.weight(0.33f),
-
-                ) {
+                modifier = Modifier.weight(1f),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    //contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+            ) {
                 Text("Ergebnisse")
             }
-            Spacer(modifier = Modifier.width(2.dp))
             Button(
                 onClick = { viewModel.navigateTo(Screen.INITIAL_WEIGHING) },
-                modifier = Modifier.weight(0.33f),
-                enabled = uiState.players.size >= 2
+                modifier = Modifier.weight(1f),
+                shape = RoundedCornerShape(12.dp),
+                enabled = uiState.players.size >= 2,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                )
             ) {
-                Text("Wiegen!")
+                Text("Wiegen!", fontWeight = FontWeight.Bold)
             }
-
-
-
-
         }
-
     }
 
     if (showPreviousPlayers) {
@@ -553,7 +557,9 @@ fun SetupScreen(viewModel: GameViewModel, uiState: GameUiState) {
                 Column {
                     uiState.previousPlayers.forEach { name ->
                         TextButton(
-                            onClick = { viewModel.addPlayer(name) },
+                            onClick = {
+                                viewModel.addPlayer(name)
+                            },
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(name, modifier = Modifier.fillMaxWidth())
