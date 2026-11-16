@@ -268,6 +268,7 @@
       <li class="toc-lvl-2"><a href="#waage-einrichten">Waage einrichten</a></li>
       <li class="toc-lvl-2"><a href="#im-spiel">Im Spiel</a></li>
       <li class="toc-lvl-3"><a href="#standard-spiel">Standard-Spiel</a></li>
+      <li class="toc-lvl-3"><a href="#bagel">Bagel</a></li>
       <li class="toc-lvl-3"><a href="#items-modus">Items-Modus</a></li>
       <li class="toc-lvl-2"><a href="#ergebnis">Ergebnis</a></li>
       <li class="toc-lvl-3"><a href="#rangliste">Rangliste</a></li>
@@ -326,58 +327,95 @@
       <p>
         Wenn du eine Bluetooth Waage verwendest klicke auf "Verbinden", eine erfolgreiche Verbindung wird entsprechend durch eine grüne Farbe signalisiert.
         
-        Das normale Spiel läuft folgender maßen ab:
         
-        1️⃣ Spieler-Setup & Startgewicht 
-    
-        Namen eintragen oder über "Letzte laden" aus alten Runden wiederherstellen.
-        Starte das Spiel mit dem Button "Wiegen"
+        Aktuell werden zwei Spiel Modi unterstütz der "Standart Modus" und der "Item Modus", die beiden Modi werden im folgenden beschrieben.
+        
 
-        Tragt die Initial Gewichte aller Spieler ein.
-        Normale Waage: Nutze die Eingabefelder um die Werte in Gramm einzutragen.
-        Bluetooth Waage - kein NFC: Nutze den Button X, um das aktuell gemessene Gewicht automatisch für den Aktuellen Spieler einzutragen.
-        Bluetooth Waage - mit NFC: 
-        Jeder Spieler stellt sein volles Glas auf die Waage.
-        1.) Halte den NFC-Chip des Spielers an die NFC-Antenne des Smartphones.
-        2.) Das Smartphone vibriert (lässt sich deaktiviern, siehe dazu Kapitel Optionen) kurz und zeigt die ID des NFC Chips an.
-        3.) Stelle das Getränk auf die 
-        ◦
-        Übernahme des Werts: Tippe auf das ⚖️ Waagen-Symbol beim Spieler oder trage den Wert manuell ein.
-        ◦
-        Wenn das Häkchen ✅ grün bei NFC zugewiesen erscheint, ist der Chip dauerhaft mit diesem Spieler für die Runde verknüpft.
-        
-        2️⃣ Zielwert festlegen 
-        
-        Der führende Spieler (der bisher am meisten getrunken hat) bestimmt das Rundenziel in Gramm/Millilitern (z. B. 50 g).
-        •
-        Das System berechnet für jeden Spieler ein individuelles persönliches Ziel, damit alle synchron trinken.
-        3️⃣ Trinken & Wiegen (Player Weighing)
-        •
-        Alle Spieler trinken ihren Schluck.
-        •
-        Gläser nacheinander auf die Waage stellen und per NFC-Scan oder Tippen auf ⚖️ das aktuelle Gewicht erfassen.
-        •
-        Die App errechnet sofort die Differenz (Fehler) in Gramm.
-        4️⃣ Auswertung & Strafe
-        •
-        Schluckspecht (Höchster Fehler): Muss einen Strafschluck trinken.
-        •
-        Perfekt getroffen (0 g Fehler / "BAGEL!"):
-        ◦
-        Es ertönt der Jubel-Sound & das Bagel-Video wird abgespielt! 🥯
-        ◦
-        Ist die Option "Exen bei 0" aktiv, darf das Opfer ein beliebiges anderes Opfer zum Exxen bestimmen!
-        •
-        Bester Schluck (Minimaler Fehler): Darf einen Schluck an Mitspieler verteilen.
-        5️⃣ Nächste Runde oder Spielende
-•
-Nach der Auswertung klickt ihr auf Noch eine Runde oder auf Spiel Beenden, um die Siegerehrung anzuzeigen.
       </p>
 
       <h3 id="standard-spiel">Standard-Spiel</h3>
-      <p>
-        Regeln und Ablauf des klassischen Spielmodus ohne Zusatzfunktionen.
-      </p>
+
+  <h4>I. Spieler-Setup &amp; Startgewicht</h4>
+  <ul>
+    <li>
+      <strong>Spieler anlegen:</strong> Trage die Namen der Teilnehmenden ein oder stelle sie über <em>„Letzte laden“</em> aus früheren Runden wieder her.
+    </li>
+    <li>
+      <strong>Sonderregel festlegen:</strong> Über das Zahnrad-Symbol kannst du einstellen, was bei einer Punktlandung (0&nbsp;g Abweichung) passiert: Entweder wird ein Spieler zum Exen ausgewählt (siehe Kapitel <a href="#bagel">Bagel</a>) oder alle anderen müssen einen Schluck trinken.
+    </li>
+    <li>
+      <strong>Wiegen starten:</strong> Starte den Vorgang mit einem Klick auf <em>„Wiegen“</em> und erfasse die Startgewichte aller Getränke:
+      <ul>
+        <li>
+          <strong>Normale Waage:</strong> Nutze die Eingabefelder, um die Werte manuell in Gramm einzutragen.
+        </li>
+        <li>
+          <strong>Bluetooth-Waage (ohne NFC):</strong> Nutze den Button <strong>(1)</strong>, um das aktuell gemessene Gewicht automatisch für den jeweiligen Spieler zu übernehmen.
+        </li>
+        <li>
+          <strong>Bluetooth-Waage (mit NFC):</strong>
+          <ol>
+            <li>Halte den NFC-Chip des Spielers an die NFC-Antenne des Smartphones.</li>
+            <li>Das Smartphone vibriert kurz (lässt sich deaktivieren, siehe Kapitel <em>Optionen</em>) und zeigt die ID des Chips an.</li>
+            <li>Stelle das volle Getränk auf die Waage, weise den Chip über Button <strong>(1)</strong> dem entsprechenden Spieler zu und speichere das Gewicht als Startgewicht.</li>
+          </ol>
+        </li>
+      </ul>
+    </li>
+    <li>
+      Sobald alle Startgewichte erfasst sind, kann das eigentliche Spiel beginnen.
+    </li>
+  </ul>
+
+  <h4>II. Game-Loop</h4>
+  <ol>
+    <li>
+      <strong>Rundenziel festlegen:</strong> Der Spieler, der bisher am meisten getrunken hat (in der ersten Runde der zuerst eingetragene Spieler), legt das Rundenziel in Gramm fest (z.&nbsp;B. 50&nbsp;g).<br>
+      <em>Empfehlung:</em> Wählt eine Untergrenze von mindestens 30&nbsp;g, da Spieler mit Strafschlücken sonst schnell Probleme bekommen.
+    </li>
+    <li>
+      <strong>Persönliches Ziel:</strong> Das System berechnet für alle ein individuelles Ziel, damit alle synchron trinken. Das bedeutet: Alle müssen zunächst den Rückstand auf die führende Person aufholen und zusätzlich das Rundenziel trinken.
+    </li>
+    <li>
+      <strong>Trinken:</strong> Alle versuchen, ihre Zielmenge zu erreichen. Dabei darf das Glas nur <strong>einmal</strong> angesetzt werden – Nachkorrigieren ist nicht erlaubt.
+    </li>
+    <li>
+      <strong>Neues Gewicht einwiegen:</strong> Das Wiegen läuft ab wie zu Beginn. Bei NFC-Chips entfällt jedoch die erneute Zuweisung – einfach scannen, auf die Waage stellen und der Rest passiert automatisch.<br>
+      <strong>Wichtig:</strong> Scanne das nächste Getränk erst, nachdem das vorherige von der Waage genommen wurde!
+      <ul>
+        <li>Die Abweichung vom persönlichen Ziel wird direkt angezeigt: Ein <strong>negativer Wert</strong> bedeutet, der Schluck war zu klein; ein <strong>positiver Wert</strong> bedeutet, er war zu groß.</li>
+        <li>Sind alle Gewichte eingetragen, klickt auf <em>„Noch eine Runde“</em> (sofern alle noch genug im Glas haben) oder auf <em>„Beenden“</em>, um zum Endstand zu gelangen.</li>
+      </ul>
+    </li>
+    <li>
+      <strong>Rundenauswertung:</strong>
+      <ul>
+        <li>Die Person mit der größten Abweichung trinkt einen Strafschluck, die präziseste Person darf einen Schluck verteilen.</li>
+        <li>Bei einer Abweichung von nur <strong>1&nbsp;g</strong> müssen alle anderen einen Strafschluck trinken.</li>
+        <li><strong>Sonderfall 0&nbsp;g Abweichung („Bagel“):</strong> Ist diese Option aktiviert, greift stattdessen die Bagel-Regel (siehe unten).</li>
+      </ul>
+    </li>
+  </ol>
+
+  <h4>III. Endergebnisse</h4>
+  <p>
+    Auf dem Endbildschirm wird das Gesamtergebnis angezeigt, das sich nach verschiedenen Bewertungskriterien sortieren lässt. Anschließend kannst du den Spielstand optional per QR-Code direkt auf andere Smartphones übertragen (siehe Kapitel <em>XX</em>).
+  </p>
+
+  <h4 id="bagel">Bagel</h4>
+  <p>
+    Wer sein Ziel auf das Gramm genau trifft, darf eine Person auswählen, die ihr Getränk komplett austrinken (exen) muss:
+  </p>
+  <ol>
+    <li>Wähle die betroffene Person in der App aus.</li>
+    <li>Sie holt sich ein neues Getränk, wiegt es ein und du klickst auf <em>„Weiter“</em>.</li>
+    <li>Anschließend muss sie das neue Getränk auf das vorherige Fülllevel heruntertrinken (wird auf dem Bildschirm angezeigt).</li>
+    <li>Wiege das neue Gewicht ein und klicke auf <em>„Weiter“</em>.</li>
+  </ol>
+  <p>
+    <em>Hausregel-Tipp:</em> Liegt die aufzuholende Menge über 200&nbsp;g, darf einmal zwischengewogen werden.
+  </p>
+      
 
       <h3 id="items-modus">Items-Modus</h3>
       <p>
