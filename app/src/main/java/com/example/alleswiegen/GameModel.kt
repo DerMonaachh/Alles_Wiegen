@@ -156,7 +156,11 @@ data class GameUiState(
     val erlaubteItems: List<Int> = AvailableItems.getAllIds(),
     val itemOverrides: Map<Int, ItemOverride> = emptyMap(),
     val showStartupMessage: Boolean = true,
-    val showStartupDialog: Boolean = true
+    val showStartupDialog: Boolean = true,
+    val isServerRunning: Boolean = false,
+    val serverIpUrl: String = "",
+    val showServerQrDialog: Boolean = false,
+    val showWifiErrorDialog: Boolean = false
 ) {
     fun getEffectiveItems(): List<Item> {
         return AvailableItems.items.map { item ->

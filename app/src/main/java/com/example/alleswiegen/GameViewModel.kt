@@ -18,6 +18,8 @@ import androidx.core.content.edit
 
 import androidx.lifecycle.viewModelScope
 import com.example.alleswiegen.components.EventData
+import com.example.alleswiegen.server.LocalWebServer
+import com.example.alleswiegen.utils.NetworkUtils
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
@@ -114,6 +116,7 @@ class GameViewModel (private val repository: PlayerScoreRepository) : ViewModel(
 
     private var bluetoothService: BluetoothService? = null
     private val bluetoothAdapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
+    private val webServer = LocalWebServer()
 
     var liveWeight by mutableStateOf("0.0")
         private set
@@ -164,6 +167,13 @@ class GameViewModel (private val repository: PlayerScoreRepository) : ViewModel(
                         endTimestamp = Long.MAX_VALUE
                     )
                 )
+            }
+        }
+        viewModelScope.launch {
+            uiState.collect { state ->
+                if (webServer.isRunning) {
+                    webServer.broadcastJson(buildLiveGameJson(state))
+                }
             }
         }
     }
@@ -254,6 +264,101 @@ class GameViewModel (private val repository: PlayerScoreRepository) : ViewModel(
     override fun onCleared() {
         super.onCleared()
         bluetoothService?.stop()
+        webServer.stop()
+    }
+
+    fun startServer(context: Context) {
+        if (!NetworkUtils.isWifiConnected(context)) {
+            _uiState.update { it.copy(showWifiErrorDialog = true) }
+            return
+        }
+
+        val ip = NetworkUtils.getWifiIpAddress(context) ?: "127.0.0.1"
+        val port = 8080
+        val url = "http://$ip:$port"
+
+        webServer.start(context, port) {
+            broadcastLiveGameJson()
+        }
+
+        _uiState.update {
+            it.copy(
+                isServerRunning = true,
+                serverIpUrl = url,
+                showServerQrDialog = true,
+                showWifiErrorDialog = false
+            )
+        }
+        broadcastLiveGameJson()
+    }
+
+    fun stopServer() {
+        webServer.stop()
+        _uiState.update {
+            it.copy(
+                isServerRunning = false,
+                serverIpUrl = "",
+                showServerQrDialog = false
+            )
+        }
+    }
+
+    fun dismissWifiErrorDialog() {
+        _uiState.update { it.copy(showWifiErrorDialog = false) }
+    }
+
+    fun dismissServerQrDialog() {
+        _uiState.update { it.copy(showServerQrDialog = false) }
+    }
+
+    fun showServerQrDialog() {
+        _uiState.update { it.copy(showServerQrDialog = true) }
+    }
+
+    fun broadcastLiveGameJson() {
+        if (webServer.isRunning) {
+            webServer.broadcastJson(buildLiveGameJson())
+        }
+    }
+
+    fun buildLiveGameJson(state: GameUiState = uiState.value): String {
+        val spielBeendet = state.gameEnds || state.currentScreen == Screen.RANKING
+        val sortedPlayers = state.players.sortedBy { if (it.position > 0) it.position else Int.MAX_VALUE }
+
+        val playersJson = sortedPlayers.mapIndexed { index, player ->
+            val pos = if (player.position > 0) player.position else (index + 1)
+            val id = index + 1
+            """
+            {
+              "id": $id,
+              "name": "${escapeJson(player.name)}",
+              "position": $pos,
+              "gesamtGetrunken": "${player.totalDrunk} g",
+              "persoenlichesZiel": "${player.personalTarget} g",
+              "absoluterFehler": "${player.totalError} g",
+              "letzterFehler": "${player.lastError} g"
+            }
+            """.trimIndent()
+        }.joinToString(separator = ",\n")
+
+        return """
+        {
+          "spielBeendet": $spielBeendet,
+          "spieler": [
+            $playersJson
+          ]
+        }
+        """.trimIndent()
+    }
+
+    private fun escapeJson(text: String): String {
+        return text.replace("\\", "\\\\")
+            .replace("\"", "\\\"")
+            .replace("\b", "\\b")
+            .replace("\u000C", "\\f")
+            .replace("\n", "\\n")
+            .replace("\r", "\\r")
+            .replace("\t", "\\t")
     }
 
     fun addPlayer(name: String) {

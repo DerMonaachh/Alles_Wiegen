@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spielstand Live</title>
+  <style>
+    :root {
+      --bg-dark: #24282E;
+      --bg-card: #2E333B;
+      --bg-card-elevated: #363C45;
+      --accent-gold: #E5A95C;
+      --accent-blue: #4C90C6;
+      --accent-red: #D94336;
+      --text-main: #F3F4F6;
+      --text-muted: #9CA3AF;
+      --border-subtle: #404752;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      padding: 16px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    /* Status & Header */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    h1 {
+      font-size: 1.3rem;
+      color: var(--accent-gold);
+      letter-spacing: 0.5px;
+    }
+
+    .status-badge {
+      font-size: 0.75rem;
+      padding: 4px 10px;
+      border-radius: 12px;
+      background-color: var(--bg-card-elevated);
+      color: var(--text-muted);
+    }
+
+    .status-badge.connected {
+      color: #6EE7B7;
+      border: 1px solid #059669;
+    }
+
+    /* Spieler Auswahl Buttons */
+    .section-label {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .player-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+
+    .player-btn {
+      background-color: var(--bg-card);
+      color: var(--text-main);
+      border: 2px solid var(--border-subtle);
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .player-btn.active {
+      background-color: var(--accent-gold);
+      color: #1A1D21;
+      border-color: var(--accent-gold);
+    }
+
+    /* Persönliche Ansicht (Groß) */
+    .personal-card {
+      background-color: var(--bg-card);
+      border: 2px solid var(--accent-gold);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 28px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+    }
+
+    .personal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .personal-name {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .personal-rank {
+      background-color: var(--accent-gold);
+      color: #1A1D21;
+      font-weight: 800;
+      font-size: 1.1rem;
+      padding: 6px 14px;
+      border-radius: 10px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .stat-box {
+      background-color: var(--bg-card-elevated);
+      padding: 14px;
+      border-radius: 12px;
+      border-left: 4px solid var(--border-subtle);
+    }
+
+    .stat-box.blue { border-left-color: var(--accent-blue); }
+    .stat-box.red { border-left-color: var(--accent-red); }
+    .stat-box.gold { border-left-color: var(--accent-gold); }
+
+    .stat-title {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .stat-value {
+      font-size: 1.45rem;
+      font-weight: 700;
+    }
+
+    .stat-box.blue .stat-value { color: var(--accent-blue); }
+    .stat-box.red .stat-value { color: var(--accent-red); }
+    .stat-box.gold .stat-value { color: var(--accent-gold); }
+
+    /* Gesamtübersicht Tabelle */
+    .overview-container {
+      background-color: var(--bg-card);
+      border-radius: 14px;
+      overflow-x: auto;
+      border: 1px solid var(--border-subtle);
+      margin-bottom: 24px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+
+    th {
+      background-color: var(--bg-card-elevated);
+      color: var(--text-muted);
+      font-weight: 600;
+      padding: 12px 10px;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 12px 10px;
+      border-top: 1px solid var(--border-subtle);
+      white-space: nowrap;
+    }
+
+    tr.highlight-row {
+      background-color: rgba(229, 169, 92, 0.14);
+    }
+
+    tr.highlight-row td:first-child {
+      border-left: 4px solid var(--accent-gold);
+    }
+
+    .val-pos { font-weight: 700; color: var(--accent-gold); }
+    .val-blue { color: var(--accent-blue); font-weight: 600; }
+    .val-red { color: var(--accent-red); font-weight: 600; }
+
+    /* CSV Download Button */
+    .download-section {
+      text-align: center;
+      margin-top: 10px;
+      padding-bottom: 30px;
+    }
+
+    .btn-csv {
+      display: none; /* Wird bei Spielende eingeblendet */
+      width: 100%;
+      background-color: var(--accent-blue);
+      color: #FFFFFF;
+      border: none;
+      padding: 15px 20px;
+      font-size: 1rem;
+      font-weight: 700;
+      border-radius: 12px;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(76, 144, 198, 0.35);
+    }
+
+    .btn-csv:active {
+      transform: scale(0.98);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>LIVE SPIELSTAND</h1>
+    <span id="connectionStatus" class="status-badge">Verbinde...</span>
+  </header>
+
+  <!-- Spieler-Buttons -->
+  <div class="section-label">Wähle deinen Spieler:</div>
+  <div id="playerButtons" class="player-buttons"></div>
+
+  <!-- Persönliche Ansicht -->
+  <div id="personalView" class="personal-card" style="display: none;">
+    <div class="personal-header">
+      <span id="pName" class="personal-name">-</span>
+      <span id="pPosition" class="personal-rank">Platz -</span>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-box blue">
+        <div class="stat-title">Gesamt Getrunken</div>
+        <div id="pGetrunken" class="stat-value">-</div>
+      </div>
+      <div class="stat-box gold">
+        <div class="stat-title">Persönliches Ziel</div>
+        <div id="pZiel" class="stat-value">-</div>
+      </div>
+      <div class="stat-box red">
+        <div class="stat-title">Absoluter Fehler</div>
+        <div id="pAbsFehler" class="stat-value">-</div>
+      </div>
+      <div class="stat-box red">
+        <div class="stat-title">Letzter Fehler</div>
+        <div id="pLetzterFehler" class="stat-value">-</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gesamtübersicht -->
+  <div class="section-label">Gesamtübersicht</div>
+  <div class="overview-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Pos</th>
+          <th>Spieler</th>
+          <th>Getrunken</th>
+          <th>Ziel</th>
+          <th>Abs. Fehler</th>
+          <th>Letzter Fehler</th>
+        </tr>
+      </thead>
+      <tbody id="overviewBody">
+        <!-- Wird dynamisch per JS gefüllt -->
+      </tbody>
+    </table>
+  </div>
+
+  <!-- CSV Download -->
+  <div class="download-section">
+    <button id="csvBtn" class="btn-csv" onclick="downloadCSV()">
+      Endergebnis als CSV herunterladen
+    </button>
+  </div>
+
+  <script>
+    let aktuellerStand = null;
+    let gewaehlteSpielerId = localStorage.getItem("selectedPlayerId") || null;
+
+    // 1. WebSocket Verbindung zum Android-Master aufbauen
+    function connectWebSocket() {
+      const wsUrl = `ws://${window.location.host}/ws`;
+      const socket = new WebSocket(wsUrl);
+      const statusEl = document.getElementById("connectionStatus");
+
+      socket.onopen = () => {
+        statusEl.textContent = "Live verbunden";
+        statusEl.classList.add("connected");
+      };
+
+      socket.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          aktuellerStand = data;
+          renderUI(data);
+        } catch (e) {
+          console.error("Fehler beim Lesen der Daten:", e);
+        }
+      };
+
+      socket.onclose = () => {
+        statusEl.textContent = "Getrennt – verbinde neu...";
+        statusEl.classList.remove("connected");
+        setTimeout(connectWebSocket, 2000);
+      };
+    }
+
+    // 2. Oberfläche aktualisieren
+    function renderUI(data) {
+      if (!data || !data.spieler) return;
+
+      // Nach Position sortieren (falls nicht schon vom Master sortiert)
+      const sortierteSpieler = [...data.spieler].sort((a, b) => a.position - b.position);
+
+      // Falls noch kein Spieler gewählt wurde, automatisch den ersten nehmen
+      if (!gewaehlteSpielerId && sortierteSpieler.length > 0) {
+        gewaehlteSpielerId = String(sortierteSpieler[0].id);
+      }
+
+      // Buttons rendern
+      const btnContainer = document.getElementById("playerButtons");
+      btnContainer.innerHTML = "";
+      data.spieler.forEach(s => {
+        const btn = document.createElement("button");
+        btn.className = "player-btn" + (String(s.id) === String(gewaehlteSpielerId) ? " active" : "");
+        btn.textContent = s.name;
+        btn.onclick = () => selectPlayer(s.id);
+        btnContainer.appendChild(btn);
+      });
+
+      // Persönliche Ansicht füllen
+      const meinSpieler = sortierteSpieler.find(s => String(s.id) === String(gewaehlteSpielerId));
+      const personalCard = document.getElementById("personalView");
+
+      if (meinSpieler) {
+        personalCard.style.display = "block";
+        document.getElementById("pName").textContent = meinSpieler.name;
+        document.getElementById("pPosition").textContent = `Platz ${meinSpieler.position}`;
+        document.getElementById("pGetrunken").textContent = meinSpieler.gesamtGetrunken;
+        document.getElementById("pZiel").textContent = meinSpieler.persoenlichesZiel;
+        document.getElementById("pAbsFehler").textContent = meinSpieler.absoluterFehler;
+        document.getElementById("pLetzterFehler").textContent = meinSpieler.letzterFehler;
+      }
+
+      // Gesamtübersicht Tabelle füllen
+      const tbody = document.getElementById("overviewBody");
+      tbody.innerHTML = "";
+
+      sortierteSpieler.forEach(s => {
+        const tr = document.createElement("tr");
+        if (String(s.id) === String(gewaehlteSpielerId)) {
+          tr.classList.add("highlight-row");
+        }
+
+        tr.innerHTML = `
+          <td class="val-pos">#${s.position}</td>
+          <td><strong>${s.name}</strong></td>
+          <td class="val-blue">${s.gesamtGetrunken}</td>
+          <td>${s.persoenlichesZiel}</td>
+          <td class="val-red">${s.absoluterFehler}</td>
+          <td class="val-red">${s.letzterFehler}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      // CSV Button einblenden, wenn Spiel beendet ist
+      const csvBtn = document.getElementById("csvBtn");
+      if (data.spielBeendet) {
+        csvBtn.style.display = "block";
+      } else {
+        csvBtn.style.display = "none";
+      }
+    }
+
+    // 3. Spieler auswählen und im Browser merken
+    function selectPlayer(id) {
+      gewaehlteSpielerId = String(id);
+      localStorage.setItem("selectedPlayerId", gewaehlteSpielerId);
+      if (aktuellerStand) {
+        renderUI(aktuellerStand);
+      }
+      // Sanft zur persönlichen Karte scrollen
+      document.getElementById("personalView").scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+
+    // 4. CSV-Datei lokal im Browser generieren & herunterladen
+    function downloadCSV() {
+      if (!aktuellerStand || !aktuellerStand.spieler) return;
+
+      const sortiert = [...aktuellerStand.spieler].sort((a, b) => a.position - b.position);
+      let csv = "Position;Spieler;Gesamt Getrunken;Persönliches Ziel;Absoluter Fehler;Letzter Fehler\n";
+
+      sortiert.forEach(s => {
+        csv += `${s.position};${s.name};${s.gesamtGetrunken};${s.persoenlichesZiel};${s.absoluterFehler};${s.letzterFehler}\n`;
+      });
+
+      const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "endergebnis.csv";
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // Starten
+    connectWebSocket();
+  </script>
+</body>
+</html>

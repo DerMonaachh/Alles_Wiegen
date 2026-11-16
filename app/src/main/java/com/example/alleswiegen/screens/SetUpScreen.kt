@@ -72,6 +72,7 @@ import com.example.alleswiegen.GameUiState
 import com.example.alleswiegen.GameViewModel
 import com.example.alleswiegen.ItemDistro
 import com.example.alleswiegen.Screen
+import com.example.alleswiegen.components.ServerQrDialog
 
 import android.media.AudioAttributes
 
@@ -129,6 +130,43 @@ fun SetupScreen(viewModel: GameViewModel, uiState: GameUiState) {
                 }
             }
 
+        }
+
+        Spacer(Modifier.height(8.dp))
+
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(
+                containerColor = if (uiState.isServerRunning) Color(0xFF1565C0) else MaterialTheme.colorScheme.surfaceVariant,
+                contentColor = if (uiState.isServerRunning) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        ) {
+            Row(
+                modifier = Modifier.padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = if (uiState.isServerRunning) "Web-Server Aktiv 🌐" else "Web-Server Ausgeschaltet 🌐",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = if (uiState.isServerRunning) uiState.serverIpUrl else "Live-Spielstand per WLAN/Hotspot teilen",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+                Button(onClick = {
+                    if (uiState.isServerRunning) {
+                        viewModel.showServerQrDialog()
+                    } else {
+                        viewModel.startServer(context)
+                    }
+                }) {
+                    Text(if (uiState.isServerRunning) "QR Code" else "Server erstellen")
+                }
+            }
         }
 
         Spacer(Modifier.height(16.dp))
@@ -201,15 +239,11 @@ fun SetupScreen(viewModel: GameViewModel, uiState: GameUiState) {
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = "Exen bei 0",
+                                text = "Bagel bei 0",
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.SemiBold
                             )
-                            Text(
-                                text = "Oder seid ihr Muschis?",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+
                         }
 
                         // Der Switch
@@ -528,6 +562,27 @@ fun SetupScreen(viewModel: GameViewModel, uiState: GameUiState) {
                 }
             },
             confirmButton = { TextButton(onClick = { showPreviousPlayers = false }) { Text("Fertig") } }
+        )
+    }
+
+    if (uiState.showWifiErrorDialog) {
+        AlertDialog(
+            onDismissRequest = { viewModel.dismissWifiErrorDialog() },
+            title = { Text("Kein WLAN oder Hotspot") },
+            text = { Text("Das Smartphone ist weder mit einem WLAN verbunden noch ist ein eigener Hotspot aktiv. Bitte verbinde dich mit einem WLAN oder aktiviere den Hotspot, um den Server zu starten.") },
+            confirmButton = {
+                TextButton(onClick = { viewModel.dismissWifiErrorDialog() }) {
+                    Text("OK")
+                }
+            }
+        )
+    }
+
+    if (uiState.showServerQrDialog && uiState.isServerRunning) {
+        ServerQrDialog(
+            serverUrl = uiState.serverIpUrl,
+            onDismiss = { viewModel.dismissServerQrDialog() },
+            onStopServer = { viewModel.stopServer() }
         )
     }
 }
