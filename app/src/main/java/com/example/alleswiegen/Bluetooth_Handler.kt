@@ -39,44 +39,62 @@ class BluetoothService(private val context: Context, private val adapter: Blueto
         serviceUuid: String,
         characteristicUuid: String
     ) {
-        stop()
-        SERVICE_UUID = serviceUuid.toBleUuid()
-        CHARACTERISTIC_UUID = characteristicUuid.toBleUuid()
-        val device = adapter?.getRemoteDevice(address)
+        try {
+            stop()
+            SERVICE_UUID = serviceUuid.toBleUuid()
+            CHARACTERISTIC_UUID = characteristicUuid.toBleUuid()
+            val device = adapter?.getRemoteDevice(address)
 
-        bluetoothGatt = device?.connectGatt(context, false, object : BluetoothGattCallback() {
-            override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
-                if (newState == BluetoothProfile.STATE_CONNECTED) {
-                    onStatusChanged(true)
-                    gatt.discoverServices()
-                } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-                    onStatusChanged(false)
+            bluetoothGatt = device?.connectGatt(context, false, object : BluetoothGattCallback() {
+                override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
+                    if (newState == BluetoothProfile.STATE_CONNECTED) {
+                        onStatusChanged(true)
+                        try {
+                            gatt.discoverServices()
+                        } catch (e: SecurityException) {
+                            Log.e("BluetoothService", "SecurityException discovering services", e)
+                            onStatusChanged(false)
+                        }
+                    } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+                        onStatusChanged(false)
+                    }
                 }
-            }
 
-            override fun onServicesDiscovered(gatt: BluetoothGatt, status: Int) {
-                val characteristic = gatt.getService(SERVICE_UUID)?.getCharacteristic(CHARACTERISTIC_UUID)
-                if (characteristic != null) {
-                    gatt.setCharacteristicNotification(characteristic, true)
-                    val descriptor = characteristic.getDescriptor(CONFIG_DESCRIPTOR_UUID)
-                    descriptor.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
-                    gatt.writeDescriptor(descriptor)
+                override fun onServicesDiscovered(gatt: BluetoothGatt, status: Int) {
+                    try {
+                        val characteristic = gatt.getService(SERVICE_UUID)?.getCharacteristic(CHARACTERISTIC_UUID)
+                        if (characteristic != null) {
+                            gatt.setCharacteristicNotification(characteristic, true)
+                            val descriptor = characteristic.getDescriptor(CONFIG_DESCRIPTOR_UUID)
+                            descriptor.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
+                            gatt.writeDescriptor(descriptor)
+                        }
+                    } catch (e: SecurityException) {
+                        Log.e("BluetoothService", "SecurityException on services discovered", e)
+                        onStatusChanged(false)
+                    }
                 }
-            }
 
-            override fun onCharacteristicChanged(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic) {
-                if (characteristic.uuid == CHARACTERISTIC_UUID) {
-                    val data = characteristic.value
-                    val hexString = data.joinToString(" ") { "%02X".format(it) }
+                override fun onCharacteristicChanged(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic) {
+                    if (characteristic.uuid == CHARACTERISTIC_UUID) {
+                        val data = characteristic.value
+                        val hexString = data.joinToString(" ") { "%02X".format(it) }
 
-                    // 3. Hier rufen wir die neue extractWeight-Methode auf
-                    val result = extractWeight(data)
+                        // 3. Hier rufen wir die neue extractWeight-Methode auf
+                        val result = extractWeight(data)
 
-                    // 4. Werte an das UI / die Activity übergeben
-                    onWeightReceived(result.weight, result.isStable, hexString)
+                        // 4. Werte an das UI / die Activity übergeben
+                        onWeightReceived(result.weight, result.isStable, hexString)
+                    }
                 }
-            }
-        })
+            })
+        } catch (e: SecurityException) {
+            Log.e("BluetoothService", "SecurityException when connecting GATT", e)
+            onStatusChanged(false)
+        } catch (e: Exception) {
+            Log.e("BluetoothService", "Error connecting GATT", e)
+            onStatusChanged(false)
+        }
     }
 
     // Deine spezifische Umrechnung: Byte 10-11, Big Endian, Gramm * 10
@@ -110,8 +128,13 @@ class BluetoothService(private val context: Context, private val adapter: Blueto
 
     @SuppressLint("MissingPermission")
     fun stop() {
-        bluetoothGatt?.disconnect()
-        bluetoothGatt?.close()
-        bluetoothGatt = null
+        try {
+            bluetoothGatt?.disconnect()
+            bluetoothGatt?.close()
+        } catch (e: Exception) {
+            Log.e("BluetoothService", "Error stopping BluetoothGatt", e)
+        } finally {
+            bluetoothGatt = null
+        }
     }
 }

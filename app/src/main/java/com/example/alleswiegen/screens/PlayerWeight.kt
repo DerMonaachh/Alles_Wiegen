@@ -38,7 +38,10 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.text.KeyboardOptions
+import com.example.alleswiegen.utils.PermissionUtils
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -108,6 +111,17 @@ fun PlayerWeightingScreen(viewModel: GameViewModel, uiState: GameUiState) {
     val liveWeight = viewModel.liveWeight
     var showExitDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
+
+    val bluetoothPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        if (permissions.values.all { it }) {
+            viewModel.setupBluetooth(context)
+            viewModel.connectBluetooth()
+        } else {
+            Toast.makeText(context, "Bluetooth-Berechtigung verweigert. Manuelle Eingabe weiterhin möglich.", Toast.LENGTH_SHORT).show()
+        }
+    }
     val hapticHelper = remember { HapticHelper(context) }
     var showCelebrationVideo by remember { mutableStateOf(false) }
     val configuration = LocalConfiguration.current
@@ -280,8 +294,12 @@ fun PlayerWeightingScreen(viewModel: GameViewModel, uiState: GameUiState) {
         else{
 
             Button(onClick = {
-                viewModel.setupBluetooth(context)
-                viewModel.connectBluetooth()
+                if (PermissionUtils.hasBluetoothPermissions(context)) {
+                    viewModel.setupBluetooth(context)
+                    viewModel.connectBluetooth()
+                } else {
+                    bluetoothPermissionLauncher.launch(PermissionUtils.getRequiredBluetoothPermissions())
+                }
             }, modifier = Modifier.fillMaxWidth()) {
                 Text("Waage Verbinden")
             }

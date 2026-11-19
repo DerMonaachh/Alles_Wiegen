@@ -4,6 +4,10 @@ import android.content.Context
 import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import com.example.alleswiegen.utils.PermissionUtils
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
@@ -89,6 +93,17 @@ fun SetupScreen(viewModel: GameViewModel, uiState: GameUiState) {
     var showHexCode by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
+    val bluetoothPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        if (permissions.values.all { it }) {
+            viewModel.setupBluetooth(context)
+            viewModel.connectBluetooth()
+        } else {
+            Toast.makeText(context, "Bluetooth-Berechtigung verweigert. Manuelle Eingabe weiterhin möglich.", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     Column(modifier = Modifier
         .fillMaxSize()
         .padding(16.dp)) {
@@ -141,8 +156,12 @@ fun SetupScreen(viewModel: GameViewModel, uiState: GameUiState) {
                 }
                 Button(
                     onClick = {
-                        viewModel.setupBluetooth(context)
-                        viewModel.connectBluetooth()
+                        if (PermissionUtils.hasBluetoothPermissions(context)) {
+                            viewModel.setupBluetooth(context)
+                            viewModel.connectBluetooth()
+                        } else {
+                            bluetoothPermissionLauncher.launch(PermissionUtils.getRequiredBluetoothPermissions())
+                        }
                     },
                     modifier = Modifier.width(140.dp),
                     colors = ButtonDefaults.buttonColors(

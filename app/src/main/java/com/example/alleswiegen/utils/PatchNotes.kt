@@ -21,6 +21,11 @@ object PatchNotes {
             bulletPoint("Dank geht raus and David für die Idee mit den NFC-Tags, auch wenns nur Trashtalk war.")
 
             append("\n")
+            versionHeader("Version 1.15")
+            bulletPoint("Lokaler Server für Multi-Handy Nutzung eingefügt")
+            bulletPoint("Farbpalette angepasst")
+
+            append("\n")
             versionHeader("Version 1.14")
             bulletPoint("Neue Item Logos und personalisierbare Items")
             bulletPoint("Score besser lesbar im Dark-Mode")

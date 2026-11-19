@@ -89,7 +89,7 @@ fun PlayerInitalWeightCard(hasWeight: Boolean,player: Player,hasNfc: Boolean,uiS
     Surface(
         shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
         tonalElevation = if (hasWeight) 0.dp else 2.dp,
-        border = if (hasWeight) BorderStroke(2.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)) else null,
+        border = if (hasWeight) BorderStroke(2.dp, MaterialTheme.colorScheme.surfaceVariant) else null,
         modifier = Modifier.fillMaxWidth()
     ) {
         Row(
