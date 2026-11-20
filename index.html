@@ -285,6 +285,7 @@
       <li class="toc-lvl-3"><a href="#bilder">Bilder</a></li>
       <li class="toc-lvl-3"><a href="#baender">Bänder</a></li>
       <li class="toc-lvl-3"><a href="#saugnaepfe">Saugnäpfe</a></li>
+      <li class="toc-lvl-1"><a href="#daten">Datenschutz</a></li>
     </ul>
   </nav>
 
@@ -599,7 +600,88 @@
       <p>
         Hinweise zur Befestigung auf glatten Oberflächen und zur optimalen Haftung.
       </p>
+      
     </section>
+    <h2 id="daten">Datenschutz</h2>
+      <p><strong>App:</strong> AllesWiegen &bull; <strong>Stand:</strong> November 2026</p>
+
+<h2>1. Verantwortlicher</h2>
+<p>Verantwortlich für die Datenverarbeitung im Zusammenhang mit dieser App im Sinne der Datenschutz-Grundverordnung (DSGVO) ist:</p>
+<p>
+  <strong>[Dein Vor- und Nachname bzw. Firmenname]</strong><br>
+  [Straße und Hausnummer]<br>
+  [PLZ und Ort]<br>
+  E-Mail: <a href="mailto:[Deine Kontakt-E-Mail-Adresse]">[Deine Kontakt-E-Mail-Adresse]</a>
+</p>
+
+<h2>2. Grundsatz: Lokale Datenverarbeitung</h2>
+<p>Der Schutz Ihrer Daten hat für uns höchste Priorität. Die App „AllesWiegen“ ist so konzipiert, dass alle von Ihnen erfassten Daten (z.&nbsp;B. Wiegedaten, Artikel, Einstellungen und Verläufe) ausschließlich lokal auf Ihrem Smartphone in einer internen Datenbank gespeichert werden.</p>
+<p>Wir betreiben keine eigenen Server und haben keinen Zugriff auf Ihre in der App gespeicherten Inhalte. Eine Übermittlung Ihrer Wiegedaten an uns findet nicht statt.</p>
+
+<h2>3. Zugriffsrechte und Schnittstellen der App</h2>
+<p>Damit die App ihre Funktionen erfüllen kann, greift sie auf bestimmte Hardware- und Systemschnittstellen Ihres Geräts zu:</p>
+<ul>
+  <li>
+    <strong>Bluetooth (<code>BLUETOOTH_SCAN</code>, <code>BLUETOOTH_CONNECT</code>):</strong><br>
+    Wird ausschließlich dazu verwendet, eine direkte, lokale Verbindung zu kompatiblen Bluetooth-Waagen oder Peripheriegeräten herzustellen und Messwerte zu empfangen. Es findet ausdrücklich keine Standortbestimmung über Bluetooth statt. <em>(Hinweis: Auf älteren Android-Versionen unter Android 12 erfordert das Betriebssystem technisch bedingt die Standortberechtigung für die Bluetooth-Gerätesuche; Standortdaten werden von der App jedoch weder erhoben noch verarbeitet.)</em>
+  </li>
+  <li>
+    <strong>NFC (<code>NFC</code>):</strong><br>
+    Wird genutzt, um NFC-Tags direkt am Gerät auszulesen oder zu beschreiben. Die Verarbeitung erfolgt rein lokal auf dem Gerät.
+  </li>
+  <li>
+    <strong>Lokales Netzwerk / WLAN &amp; Webhooks (<code>INTERNET</code>, <code>ACCESS_NETWORK_STATE</code>, <code>ACCESS_WIFI_STATE</code>):</strong><br>
+    Die App bietet die Möglichkeit, einen lokalen Server bereitzustellen bzw. Webhooks zu nutzen, um im lokalen Netzwerk (WLAN) direkt mit anderen Geräten oder Systemen (z.&nbsp;B. Smart-Home-Systemen oder lokalen Computern) zu kommunizieren.
+    <ul>
+      <li>Diese Kommunikation findet ausschließlich direkt zwischen Ihrem Smartphone und den von Ihnen konfigurierten Zielgeräten statt.</li>
+      <li>Es werden hierbei keine Daten an uns übertragen. Sofern Sie eigene Ziel-URLs (Webhooks) eintragen, erfolgt die Datenübertragung an diese Adresse auf Ihre eigene Veranlassung und Verantwortung.</li>
+    </ul>
+  </li>
+  <li>
+    <strong>Kamera / Barcode- &amp; QR-Code-Scanner:</strong><br>
+    Für das Scannen von Barcodes und QR-Codes wird der Google Play Services Code Scanner (Google ML Kit) verwendet (siehe Abschnitt 4).
+  </li>
+</ul>
+
+<h2>4. Einsatz von Drittanbieter-Diensten (Google Play Store &amp; Google Play Services)</h2>
+<p>Für die Bereitstellung der App sowie für die Barcode- und QR-Code-Erkennung nutzt die App Dienste der Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Irland:</p>
+<ul>
+  <li>
+    <strong>Google Play Services Code Scanner (ML Kit):</strong><br>
+    Für das Scannen von Codes kommt das SDK von Google ML Kit zum Einsatz. Der eigentliche Scan-Vorgang sowie die Analyse des Kamerabildes finden vollständig lokal auf Ihrem Gerät statt. Es werden keine Kamerabilder oder gescannten Barcode-Inhalte an Google übermittelt. Im Rahmen der Bereitstellung und Aktualisierung des Scan-Moduls erhebt Google technische Diagnose- und Leistungsdaten (z.&nbsp;B. Informationen über den erfolgreichen Modell-Download, Absturzberichte, App-Paketname, Android-Version sowie eine pseudonyme Installations-ID).
+  </li>
+  <li>
+    <strong>Google Play Store &amp; Android Vitals:</strong><br>
+    Beim Herunterladen, Aktualisieren oder Ausführen der App über den Google Play Store verarbeitet Google eigenverantwortlich technische Nutzungs- und Diagnosedaten (z.&nbsp;B. Installationsstatus, Gerätemodell, Android-Version sowie anonymisierte Absturz- und Leistungsberichte über Android Vitals), um die Stabilität und Sicherheit der App-Verteilung zu gewährleisten.
+  </li>
+  <li>
+    <strong>Rechtsgrundlage:</strong><br>
+    Die Nutzung erfolgt auf Grundlage unseres berechtigten Interesses an einer zuverlässigen, sicheren und ressourcenschonenden Bereitstellung der App und ihrer Scan-Funktion (Art. 6 Abs. 1 lit. f DSGVO).
+  </li>
+</ul>
+<p>Weitere Informationen zum Datenschutz bei Google finden Sie in der Datenschutzerklärung von Google: <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">https://policies.google.com/privacy</a></p>
+
+<h2>5. Datensicherung über das Betriebssystem (Android Auto-Backup)</h2>
+<p>Sofern Sie in den Systemeinstellungen Ihres Android-Geräts die automatische Gerätesicherung (z.&nbsp;B. über Google One / Google Drive) aktiviert haben, werden die lokalen App-Daten (einschließlich der Datenbank) durch das Betriebssystem automatisch und verschlüsselt in Ihrem persönlichen Google-Konto gesichert. Diese Sicherung unterliegt den Einstellungen Ihres Google-Kontos; wir haben keinen Zugriff auf diese Backups. Sie können diese Funktion jederzeit in den Android-Systemeinstellungen deaktivieren.</p>
+
+<h2>6. Speicherdauer und Löschung Ihrer Daten</h2>
+<p>Da alle App-Daten lokal auf Ihrem Endgerät gespeichert werden, bestimmen Sie selbst über die Speicherdauer. Sie können Ihre Daten jederzeit innerhalb der App löschen, den App-Speicher über die Android-Systemeinstellungen leeren oder die Daten vollständig durch Deinstallation der App von Ihrem Gerät entfernen.</p>
+
+<h2>7. Ihre Rechte als betroffene Person</h2>
+<p>Nach der DSGVO stehen Ihnen gegenüber dem Verantwortlichen – soweit personenbezogene Daten verarbeitet werden – folgende Rechte zu:</p>
+<ul>
+  <li>Recht auf Auskunft (Art. 15 DSGVO)</li>
+  <li>Recht auf Berichtigung (Art. 16 DSGVO)</li>
+  <li>Recht auf Löschung (Art. 17 DSGVO)</li>
+  <li>Recht auf Einschränkung der Verarbeitung (Art. 18 DSGVO)</li>
+  <li>Recht auf Datenübertragbarkeit (Art. 20 DSGVO)</li>
+  <li>Widerspruchsrecht gegen die Verarbeitung (Art. 21 DSGVO)</li>
+</ul>
+<p>Zudem haben Sie das Recht, sich bei einer Datenschutz-Aufsichtsbehörde über die Verarbeitung Ihrer personenbezogenen Daten zu beschweren (Art. 77 DSGVO).</p>
+
+<h2>8. Bereitstellung dieser Webseite (GitHub Pages)</h2>
+<p>Diese Datenschutzerklärung wird über GitHub Pages (GitHub Inc., 88 Colin P Kelly Jr St, San Francisco, CA 94107, USA) bereitgestellt. Beim Aufruf dieser Webseite erfasst GitHub technisch bedingt Verbindungsdaten (z.&nbsp;B. Ihre IP-Adresse) in Server-Logfiles, um die Sicherheit und Auslieferung der Seite zu gewährleisten (Art. 6 Abs. 1 lit. f DSGVO). Weitere Informationen finden Sie in der <a href="https://docs.github.com/de/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noopener noreferrer">Datenschutzerklärung von GitHub</a>.</p>
+
 
   </main>
 
