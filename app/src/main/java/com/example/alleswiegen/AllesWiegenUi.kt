@@ -62,7 +62,7 @@ fun AllesWiegenApp(viewModel: GameViewModel = viewModel()) {
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.clickable {
-                            uriHandler.openUri("https://dermonaachh.github.io/Alles_Wiegen/#standard-spiel")
+                            uriHandler.openUri("https://zygon-labs.github.io/alles-wiegen/")
                         }
                     )
                 }
@@ -79,7 +79,7 @@ fun AllesWiegenApp(viewModel: GameViewModel = viewModel()) {
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Alleswiegen", fontWeight = FontWeight.Bold) },
+                title = { Text("Alles Wiegen", fontWeight = FontWeight.Bold) },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer
                 )

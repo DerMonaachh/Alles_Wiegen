@@ -2,19 +2,33 @@ package com.example.alleswiegen
 
 import android.annotation.SuppressLint
 import android.bluetooth.*
+import android.bluetooth.le.ScanCallback
+import android.bluetooth.le.ScanResult
+import android.bluetooth.le.ScanSettings
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import java.util.*
 import kotlin.math.round
-
 
 data class WeightResult(
     val weight: Int,
     val isStable: Boolean
 )
+
+data class DiscoveredBluetoothDevice(
+    val name: String,
+    val address: String,
+    val rssi: Int,
+    val isScaleCandidate: Boolean
+)
+
 class BluetoothService(private val context: Context, private val adapter: BluetoothAdapter?) {
 
     private var bluetoothGatt: BluetoothGatt? = null
+    private var scanCallback: ScanCallback? = null
+    private val handler = Handler(Looper.getMainLooper())
 
     // Deine identifizierten UUIDs
     private var SERVICE_UUID = "fff0".toBleUuid()
@@ -135,6 +149,99 @@ class BluetoothService(private val context: Context, private val adapter: Blueto
             Log.e("BluetoothService", "Error stopping BluetoothGatt", e)
         } finally {
             bluetoothGatt = null
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    fun startScan(
+        onDeviceDiscovered: (DiscoveredBluetoothDevice) -> Unit,
+        onScanFinished: () -> Unit,
+        scanDurationMs: Long = 10000L
+    ) {
+        stopScan()
+        val scanner = adapter?.bluetoothLeScanner
+        if (scanner == null) {
+            onScanFinished()
+            return
+        }
+
+        val discoveredAddresses = mutableSetOf<String>()
+
+        scanCallback = object : ScanCallback() {
+            override fun onScanResult(callbackType: Int, result: ScanResult) {
+                val device = result.device ?: return
+                val address = device.address ?: return
+
+                if (!discoveredAddresses.contains(address)) {
+                    discoveredAddresses.add(address)
+                    val rawName = device.name ?: result.scanRecord?.deviceName
+                    val deviceName = if (!rawName.isNullOrBlank()) rawName else "Unbekanntes Gerät"
+
+                    // Check if it's a scale candidate
+                    val serviceUuids = result.scanRecord?.serviceUuids?.map { it.uuid } ?: emptyList()
+                    val fff0Uuid = "fff0".toBleUuid()
+                    val devInfoUuid = "180a".toBleUuid()
+
+                    val isScaleUuid = serviceUuids.contains(fff0Uuid) || serviceUuids.contains(devInfoUuid)
+                    val isScaleName = deviceName.contains("Scale", ignoreCase = true) ||
+                            deviceName.contains("Qing", ignoreCase = true) ||
+                            deviceName.contains("Ching", ignoreCase = true) ||
+                            deviceName.contains("Senssun", ignoreCase = true) ||
+                            deviceName.contains("Nutri", ignoreCase = true) ||
+                            deviceName.contains("iScale", ignoreCase = true) ||
+                            deviceName.startsWith("QN-", ignoreCase = true) ||
+                            deviceName.startsWith("IC-", ignoreCase = true)
+
+                    val isScaleCandidate = isScaleUuid || isScaleName
+
+                    onDeviceDiscovered(
+                        DiscoveredBluetoothDevice(
+                            name = deviceName,
+                            address = address,
+                            rssi = result.rssi,
+                            isScaleCandidate = isScaleCandidate
+                        )
+                    )
+                }
+            }
+
+            override fun onScanFailed(errorCode: Int) {
+                Log.e("BluetoothService", "BLE Scan failed with code $errorCode")
+                stopScan()
+                onScanFinished()
+            }
+        }
+
+        try {
+            val settings = ScanSettings.Builder()
+                .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
+                .build()
+            scanner.startScan(null, settings, scanCallback)
+
+            handler.postDelayed({
+                stopScan()
+                onScanFinished()
+            }, scanDurationMs)
+        } catch (e: SecurityException) {
+            Log.e("BluetoothService", "SecurityException starting BLE scan", e)
+            stopScan()
+            onScanFinished()
+        } catch (e: Exception) {
+            Log.e("BluetoothService", "Error starting BLE scan", e)
+            stopScan()
+            onScanFinished()
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    fun stopScan() {
+        try {
+            if (scanCallback != null) {
+                adapter?.bluetoothLeScanner?.stopScan(scanCallback)
+                scanCallback = null
+            }
+        } catch (e: Exception) {
+            Log.e("BluetoothService", "Error stopping BLE scan", e)
         }
     }
 }

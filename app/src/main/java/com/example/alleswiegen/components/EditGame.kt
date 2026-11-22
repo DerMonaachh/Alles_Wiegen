@@ -265,7 +265,7 @@ fun PlayerEditCard(
 
             Spacer(modifier = Modifier.height(12.dp))
             Text(
-                "Ohne Exen",
+                "Ohne Bagel",
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.secondary
             )

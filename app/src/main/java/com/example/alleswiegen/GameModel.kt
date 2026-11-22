@@ -146,7 +146,7 @@ data class GameUiState(
     val requested: Int= 0,
     val exxer:String="",
     val gameEnds:Boolean=false,
-    val bluetoothAddress: String = "FF:03:00:6D:E3:07",
+    val bluetoothAddress: String = "AA:BB:CC:DD:EE:FF",
     val SERVICE_UUID: String = "fff0",
     val CHARACTERISTIC_UUID: String = "fff1",
     val lastStoredGameTime: Long = 0,
@@ -158,6 +158,8 @@ data class GameUiState(
     val showStartupMessage: Boolean = true,
     val showStartupDialog: Boolean = true,
     val isServerRunning: Boolean = false,
+    val isScanningBluetooth: Boolean = false,
+    val discoveredBluetoothDevices: List<DiscoveredBluetoothDevice> = emptyList(),
     val serverIpUrl: String = "",
     val showServerQrDialog: Boolean = false,
     val showWifiErrorDialog: Boolean = false

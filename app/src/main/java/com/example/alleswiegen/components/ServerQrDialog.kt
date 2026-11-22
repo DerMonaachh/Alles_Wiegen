@@ -87,10 +87,7 @@ fun ServerQrDialog(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
+
                     OutlinedButton(
                         onClick = onStopServer,
                         colors = ButtonDefaults.outlinedButtonColors(
@@ -103,7 +100,7 @@ fun ServerQrDialog(
                     Button(onClick = onDismiss) {
                         Text("Schließen")
                     }
-                }
+
             }
         }
     }

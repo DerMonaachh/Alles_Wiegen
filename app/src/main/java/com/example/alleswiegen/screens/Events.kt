@@ -73,7 +73,7 @@ import com.example.alleswiegen.components.transformScoresToPlayerRanks
 enum class Methoden(val displayName: String) {
     KLASSISCH("Klassische Wertung"),
     BAGEL("Bagel Quote"),
-    EXXEN("Ohne Exen"),
+    EXXEN("Ohne Bagel"),
     DURSCHNITTLICHER_FEHLER("Durschnittlicher Fehler");
 
 
@@ -504,7 +504,7 @@ fun RankingItem(score: PlayerRank,method: String) {
             Spacer(modifier = Modifier.width(8.dp))
             val infoText = when (method){
                    Methoden.KLASSISCH.displayName -> "Klassische Punkte ${score.pointsByErrorClassic}"
-                Methoden.EXXEN.displayName -> "Punkte ohne Fehler durch Exen ${score.pointsByErrorNoExxer} "
+                Methoden.EXXEN.displayName -> "Punkte ohne Fehler durch Bagel ${score.pointsByErrorNoExxer} "
                 Methoden.BAGEL.displayName ->" ${"%.1f".format(score.bagelRate)} pro Spiel | Gesamt: ${score.bagels}"
                   Methoden.DURSCHNITTLICHER_FEHLER.displayName ->  "Fehler ${"%.1f".format(score.averageError)}g"
                 else -> "Klassische Punkte ${score.pointsByErrorClassic}"

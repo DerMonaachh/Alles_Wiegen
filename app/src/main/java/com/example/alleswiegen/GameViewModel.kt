@@ -261,8 +261,48 @@ class GameViewModel (private val repository: PlayerScoreRepository) : ViewModel(
         )
     }
 
+    fun startBluetoothScan(context: Context) {
+        setupBluetooth(context)
+        _uiState.update {
+            it.copy(
+                isScanningBluetooth = true,
+                discoveredBluetoothDevices = emptyList()
+            )
+        }
+        bluetoothService?.startScan(
+            onDeviceDiscovered = { device ->
+                _uiState.update { current ->
+                    if (current.discoveredBluetoothDevices.none { it.address == device.address }) {
+                        current.copy(
+                            discoveredBluetoothDevices = current.discoveredBluetoothDevices + device
+                        )
+                    } else {
+                        current
+                    }
+                }
+            },
+            onScanFinished = {
+                _uiState.update { it.copy(isScanningBluetooth = false) }
+            }
+        )
+    }
+
+    fun stopBluetoothScan() {
+        bluetoothService?.stopScan()
+        _uiState.update { it.copy(isScanningBluetooth = false) }
+    }
+
+    fun selectDiscoveredDevice(context: Context, device: DiscoveredBluetoothDevice) {
+        stopBluetoothScan()
+        updateBluetoothAddress(context, device.address)
+        if (device.name.isNotBlank() && device.name != "Unbekanntes Gerät") {
+            saveScale(context, device.name, device.address)
+        }
+    }
+
     override fun onCleared() {
         super.onCleared()
+        bluetoothService?.stopScan()
         bluetoothService?.stop()
         webServer.stop()
     }
@@ -776,7 +816,7 @@ class GameViewModel (private val repository: PlayerScoreRepository) : ViewModel(
                 if (currentState.exenByNull) {
                     val names = perfectOnes.joinToString(" und ") { it.name }
                     val verb = if (perfectOnes.size > 1) "dürfen" else "darf ein"
-                    sb.append("$names $verb Opfer zum Exxen auswählen!\n")
+                    sb.append("$names $verb Kandidat für Bagel auswählen!\n")
 
                     exxer = perfectOnes.size
                 } else {
@@ -834,6 +874,13 @@ class GameViewModel (private val repository: PlayerScoreRepository) : ViewModel(
         val sharedPref = context.getSharedPreferences("SavedScales", Context.MODE_PRIVATE)
         sharedPref.edit {
             putString(name, address)
+        }
+    }
+
+    fun deleteScale(context: Context, name: String) {
+        val sharedPref = context.getSharedPreferences("SavedScales", Context.MODE_PRIVATE)
+        sharedPref.edit {
+            remove(name)
         }
     }
 
@@ -1172,10 +1219,10 @@ class GameViewModel (private val repository: PlayerScoreRepository) : ViewModel(
 
         // 1. Vorherige Spieler laden (dein bestehender Code)
         val savedPlayers = prefs.getString("previous_players", "") ?: ""
-        val players = if (savedPlayers.isEmpty()) listOf("Leon", "Nico") else savedPlayers.split(",")
+        val players = if (savedPlayers.isEmpty()) listOf("Spieler 1", "Spieler 2") else savedPlayers.split(",")
 
         // 2. Bluetooth Adresse laden (NEU)
-        val savedAddress = prefs.getString("bluetooth_address", "FF:03:00:6D:E3:07") ?: "FF:03:00:6D:E3:07"
+        val savedAddress = prefs.getString("bluetooth_address", "AA:BB:CC:DD:EE:FF") ?: "AA:BB:CC:DD:EE:FF"
         val savedService = prefs.getString("service_uuid", "fff0") ?: "ffff0"
         val savedCharacteristic = prefs.getString("bluetooth_characteristic", "fff1") ?: "fff1"
         val vibrate = (prefs.getString("vibration", "true") ?: "true").toBoolean()
@@ -1316,14 +1363,19 @@ class GameViewModel (private val repository: PlayerScoreRepository) : ViewModel(
             // Speichern
             saveToDisk(context, updatedPrevious)
 
-            GameUiState(
+            currentState.copy(
+                players = emptyList(),
+                currentRound = 0,
+                currentScreen = Screen.SETUP,
                 previousPlayers = updatedPrevious,
-                exenByNull = currentState.exenByNull,
-                sortByRank = currentState.sortByRank,
-                isBluetoothConnected = currentState.isBluetoothConnected, // Status behalten
-                gameEnds = false,
+                currentWeights = emptyMap(),
+                activeBluetoothPlayer = null,
+                isWeightStable = false,
                 playerNeedToEx = 0,
-
+                nfcIsUsed = false,
+                gameEnds = false,
+                exxer = "",
+                showStartupDialog = false
             )
         }
     }

@@ -86,7 +86,7 @@ fun AdvancedPlayerChart(playerRanks: List<PlayerRank>,method: String) {
                             // Hier wird der Y-Wert dynamisch basierend auf 'method' gewählt
                             val yValue = when (method) {
                                 "Klassische Wertung" -> rank.pointsByErrorClassic.toFloat()
-                                "Ohne Exen" -> rank.pointsByErrorNoExxer.toFloat()
+                                "Ohne Bagel" -> rank.pointsByErrorNoExxer.toFloat()
                                 "Durschnittlicher Fehler" -> rank.averageError.toFloat()
                                 "Bagel Quote" -> rank.bagelRate.toFloat()
                                 else -> rank.pointsByErrorClassic.toFloat()

@@ -20,14 +20,18 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
+import com.example.alleswiegen.utils.PermissionUtils
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
@@ -247,6 +251,16 @@ fun BluetoothOptions(viewModel: GameViewModel, uiState: GameUiState, context: Co
     var expanded by remember { mutableStateOf(false) }
     val savedScales = remember { mutableStateMapOf<String, String>() }
 
+    val scanPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        if (permissions.values.all { it }) {
+            viewModel.startBluetoothScan(context)
+        } else {
+            Toast.makeText(context, "Bluetooth-Berechtigung verweigert.", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     // Initial load of saved scales
     LaunchedEffect(Unit) {
         savedScales.putAll(viewModel.getSavedScales(context))
@@ -263,6 +277,149 @@ fun BluetoothOptions(viewModel: GameViewModel, uiState: GameUiState, context: Co
                 style = MaterialTheme.typography.headlineSmall,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
+        }
+
+        // --- BLE SCANNER CARD ---
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+                )
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = "AKTIVE WAAGEN SUCHEN",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                    Text(
+                        text = "Scannt nach eingeschalteten Bluetooth-Waagen in der Nähe.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(bottom = 12.dp)
+                    )
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Button(
+                            onClick = {
+                                if (uiState.isScanningBluetooth) {
+                                    viewModel.stopBluetoothScan()
+                                } else {
+                                    if (PermissionUtils.hasBluetoothPermissions(context)) {
+                                        viewModel.startBluetoothScan(context)
+                                    } else {
+                                        scanPermissionLauncher.launch(PermissionUtils.getRequiredBluetoothPermissions())
+                                    }
+                                }
+                            },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            if (uiState.isScanningBluetooth) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(18.dp),
+                                    strokeWidth = 2.dp,
+                                    color = MaterialTheme.colorScheme.onPrimary
+                                )
+                                Spacer(modifier = Modifier.size(8.dp))
+                                Text("Scan Stoppen", style = MaterialTheme.typography.labelMedium)
+                            } else {
+                                Text("Nach Waagen scannen 🔍", style = MaterialTheme.typography.labelMedium)
+                            }
+                        }
+                    }
+
+                    if (uiState.discoveredBluetoothDevices.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text(
+                            text = "Gefundene Geräte (${uiState.discoveredBluetoothDevices.size}):",
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+
+                        val sortedDevices = uiState.discoveredBluetoothDevices.sortedByDescending { it.isScaleCandidate }
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            sortedDevices.forEach { device ->
+                                Card(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable {
+                                            if (device.name.isNotBlank() && device.name != "Unbekanntes Gerät") {
+                                                scaleName = device.name
+                                            }
+                                            viewModel.selectDiscoveredDevice(context, device)
+                                            Toast.makeText(
+                                                context,
+                                                "Waage ${device.name} ausgewählt",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        },
+                                    colors = CardDefaults.cardColors(
+                                        containerColor = if (device.isScaleCandidate)
+                                            MaterialTheme.colorScheme.secondaryContainer
+                                        else
+                                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                                    )
+                                ) {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(12.dp),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Column(modifier = Modifier.weight(1f)) {
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Text(
+                                                    text = device.name,
+                                                    style = MaterialTheme.typography.bodyMedium,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                                if (device.isScaleCandidate) {
+                                                    Spacer(modifier = Modifier.size(6.dp))
+                                                    Text(
+                                                        text = "★ Waage erkannt",
+                                                        style = MaterialTheme.typography.labelSmall,
+                                                        color = MaterialTheme.colorScheme.primary,
+                                                        fontWeight = FontWeight.Bold
+                                                    )
+                                                }
+                                            }
+                                            Text(
+                                                text = device.address,
+                                                style = MaterialTheme.typography.bodySmall,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
+                                        }
+                                        Text(
+                                            text = "${device.rssi} dBm",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    } else if (uiState.isScanningBluetooth) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Suche nach Geräten in der Nähe...",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+            }
         }
 
         item {
@@ -321,7 +478,7 @@ fun BluetoothOptions(viewModel: GameViewModel, uiState: GameUiState, context: Co
                             DropdownMenu(
                                 expanded = expanded,
                                 onDismissRequest = { expanded = false },
-                                modifier = Modifier.fillMaxWidth(0.5f)
+                                modifier = Modifier.fillMaxWidth(0.8f)
                             ) {
                                 if (savedScales.isEmpty()) {
                                     DropdownMenuItem(
@@ -331,7 +488,45 @@ fun BluetoothOptions(viewModel: GameViewModel, uiState: GameUiState, context: Co
                                 }
                                 savedScales.forEach { (name, address) ->
                                     DropdownMenuItem(
-                                        text = { Text(name) },
+                                        text = {
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                horizontalArrangement = Arrangement.SpaceBetween,
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Column(modifier = Modifier.weight(1f)) {
+                                                    Text(
+                                                        text = name,
+                                                        style = MaterialTheme.typography.bodyMedium,
+                                                        fontWeight = FontWeight.SemiBold
+                                                    )
+                                                    Text(
+                                                        text = address,
+                                                        style = MaterialTheme.typography.labelSmall,
+                                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                                    )
+                                                }
+                                                IconButton(
+                                                    onClick = {
+                                                        viewModel.deleteScale(context, name)
+                                                        savedScales.remove(name)
+                                                        Toast.makeText(
+                                                            context,
+                                                            "$name gelöscht",
+                                                            Toast.LENGTH_SHORT
+                                                        ).show()
+                                                    },
+                                                    modifier = Modifier.size(28.dp)
+                                                ) {
+                                                    Icon(
+                                                        imageVector = Icons.Default.Delete,
+                                                        contentDescription = "Löschen",
+                                                        tint = MaterialTheme.colorScheme.error,
+                                                        modifier = Modifier.size(18.dp)
+                                                    )
+                                                }
+                                            }
+                                        },
                                         onClick = {
                                             scaleName = name
                                             viewModel.updateBluetoothAddress(context, address)
@@ -500,7 +695,7 @@ fun GameOptions(viewModel: GameViewModel, uiState: GameUiState,context: Context)
                                 "averageError <=6 -> 2\n" +
                                 "averageError <=10 -> 1\n" +
                                 "averageError <=20 -> 0\n" +
-                                "averageError <=30 -> -1",
+                                "sonst-> -1",
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
@@ -654,7 +849,7 @@ fun GeneralOptions(viewModel: GameViewModel, uiState: GameUiState) {
                     )
                     Spacer(Modifier.height(8.dp))
                     Text(
-                        text = "App Version 1.14" ,
+                        text = "App Version 1.16" ,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -700,12 +895,12 @@ fun GeneralOptions(viewModel: GameViewModel, uiState: GameUiState) {
                     )
                     Button(
                         onClick = {
-                            val intent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://dermonaachh.github.io/Alles_Wiegen"))
+                            val intent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://zygon-labs.github.io/alles-wiegen/"))
                             context.startActivity(intent)
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Spiel Infos & Anleitung öffnen")
+                        Text("Spiel Infos, Anleitung & Datenschutz öffnen")
                     }
 
                     Spacer(Modifier.height(16.dp))

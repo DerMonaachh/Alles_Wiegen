@@ -34,9 +34,9 @@ import com.example.alleswiegen.components.QrCodeDialog
 // Enum für die verschiedenen Ranking-Modi
 enum class RankingMode(val title: String) {
     Gesamt("Klassisch"),
-    OhneExxer("Ohne Exxen"),
-    OhneWorst("Ohne Schlechtesten"),
-    Profi("Ohne Exxen und ohne Schlechtesten")
+    OhneExxer("Ohne Bagel"),
+    OhneWorst("Ohne max. Fehler"),
+    Profi("Ohne Bagel ohne max. Fehler")
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -97,9 +97,9 @@ fun RankingScreen(viewModel: GameViewModel, uiState: GameUiState) {
             Text(
                 text = when (selectedMode) {
                     RankingMode.Gesamt -> "Klassische Wertung aller Schlucke"
-                    RankingMode.OhneExxer -> "Fehler durch Exxen werden ignoriert"
-                    RankingMode.OhneWorst -> "Der schlechteste Schluck wird abgezogen (kann auch von Exxen sein)"
-                    RankingMode.Profi -> "Fehler durch Exxen werden ignoriert & schlechtester regulärer Schluck ignoriert."
+                    RankingMode.OhneExxer -> "Fehler durch Bagel werden ignoriert"
+                    RankingMode.OhneWorst -> "Der schlechteste Schluck wird abgezogen (kann auch von Bagel sein)"
+                    RankingMode.Profi -> "Fehler durch Bagel werden ignoriert & schlechtester regulärer Schluck ignoriert."
                 },
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.secondary

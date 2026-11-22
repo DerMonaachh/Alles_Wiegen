@@ -202,31 +202,6 @@
     .val-pos { font-weight: 700; color: var(--accent-gold); }
     .val-blue { color: var(--accent-blue); font-weight: 600; }
     .val-red { color: var(--accent-red); font-weight: 600; }
-
-    /* CSV Download Button */
-    .download-section {
-      text-align: center;
-      margin-top: 10px;
-      padding-bottom: 30px;
-    }
-
-    .btn-csv {
-      display: none; /* Wird bei Spielende eingeblendet */
-      width: 100%;
-      background-color: var(--accent-blue);
-      color: #FFFFFF;
-      border: none;
-      padding: 15px 20px;
-      font-size: 1rem;
-      font-weight: 700;
-      border-radius: 12px;
-      cursor: pointer;
-      box-shadow: 0 4px 14px rgba(76, 144, 198, 0.35);
-    }
-
-    .btn-csv:active {
-      transform: scale(0.98);
-    }
   </style>
 </head>
 <body>
@@ -284,13 +259,6 @@
         <!-- Wird dynamisch per JS gefüllt -->
       </tbody>
     </table>
-  </div>
-
-  <!-- CSV Download -->
-  <div class="download-section">
-    <button id="csvBtn" class="btn-csv" onclick="downloadCSV()">
-      Endergebnis als CSV herunterladen
-    </button>
   </div>
 
   <script>
@@ -382,14 +350,6 @@
         `;
         tbody.appendChild(tr);
       });
-
-      // CSV Button einblenden, wenn Spiel beendet ist
-      const csvBtn = document.getElementById("csvBtn");
-      if (data.spielBeendet) {
-        csvBtn.style.display = "block";
-      } else {
-        csvBtn.style.display = "none";
-      }
     }
 
     // 3. Spieler auswählen und im Browser merken
@@ -401,26 +361,6 @@
       }
       // Sanft zur persönlichen Karte scrollen
       document.getElementById("personalView").scrollIntoView({ behavior: "smooth", block: "nearest" });
-    }
-
-    // 4. CSV-Datei lokal im Browser generieren & herunterladen
-    function downloadCSV() {
-      if (!aktuellerStand || !aktuellerStand.spieler) return;
-
-      const sortiert = [...aktuellerStand.spieler].sort((a, b) => a.position - b.position);
-      let csv = "Position;Spieler;Gesamt Getrunken;Persönliches Ziel;Absoluter Fehler;Letzter Fehler\n";
-
-      sortiert.forEach(s => {
-        csv += `${s.position};${s.name};${s.gesamtGetrunken};${s.persoenlichesZiel};${s.absoluterFehler};${s.letzterFehler}\n`;
-      });
-
-      const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "endergebnis.csv";
-      a.click();
-      URL.revokeObjectURL(url);
     }
 
     // Starten

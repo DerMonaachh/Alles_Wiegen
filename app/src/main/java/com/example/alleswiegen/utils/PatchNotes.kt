@@ -16,9 +16,23 @@ object PatchNotes {
             }
 
 
-            versionHeader("Dank")
-            bulletPoint("Dank geht raus an Nico, Klari und Rici fürs rege Testen ( auf Festivals und daheim).")
-            bulletPoint("Dank geht raus and David für die Idee mit den NFC-Tags, auch wenns nur Trashtalk war.")
+            append("\n")
+
+            versionHeader("Version 1.18")
+            bulletPoint("Feedback vom geschlossenen Test eingearbeitet")
+            bulletPoint("Rechtschreibfehler: Farpalette")
+
+            append("\n")
+
+            versionHeader("Version 1.17")
+            bulletPoint("Kleinere Graphik Bugs und Rechtschreibung behoben")
+            bulletPoint("Initiale Version für den geschlossenen Test.")
+
+            append("\n")
+
+            versionHeader("Version 1.16")
+            bulletPoint("Aktives Scannen nach Waagen in der Nähe")
+            bulletPoint("Webhook html angepasst")
 
             append("\n")
             versionHeader("Version 1.15")
@@ -33,7 +47,7 @@ object PatchNotes {
             append("\n")
             versionHeader("Version 1.13")
             bulletPoint("Infos zu Items und Punkte Berechnung in Optionen eingefügt")
-            bulletPoint("Verhindern, dass der Erste eine Blue Shell bekommt")
+            bulletPoint("Verhindern, dass der Erste keinen Blauen Hopfen bekommt")
 
             append("\n")
             versionHeader("Version 1.12")
