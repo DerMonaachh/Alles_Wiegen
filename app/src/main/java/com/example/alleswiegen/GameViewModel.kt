@@ -1229,6 +1229,7 @@ class GameViewModel (private val repository: PlayerScoreRepository) : ViewModel(
         val jingle = (prefs.getString("jingle", "true") ?: "true").toBoolean()
         val jingleLocation = prefs.getString("jingleLocation", "") ?: ""
         val showStartupMessage = (prefs.getString("show_startup_message", "true") ?: "true").toBoolean()
+        val showUiTips = (prefs.getString("show_ui_tips", "true") ?: "true").toBoolean()
 
         val itemOverrides = mutableMapOf<Int, ItemOverride>()
         AvailableItems.getAllIds().forEach { id ->
@@ -1255,6 +1256,7 @@ class GameViewModel (private val repository: PlayerScoreRepository) : ViewModel(
             jingleLocation = jingleLocation,
             showStartupMessage = showStartupMessage,
             showStartupDialog = showStartupMessage,
+            showUiTips = showUiTips,
             itemOverrides = itemOverrides,
         ) }
     }
@@ -1264,6 +1266,14 @@ class GameViewModel (private val repository: PlayerScoreRepository) : ViewModel(
         val prefs = context.getSharedPreferences("AllesWiegenPrefs", Context.MODE_PRIVATE)
         prefs.edit {
             putString("show_startup_message", enabled.toString())
+        }
+    }
+
+    fun toggleUiTips(enabled: Boolean, context: Context) {
+        _uiState.update { it.copy(showUiTips = enabled) }
+        val prefs = context.getSharedPreferences("AllesWiegenPrefs", Context.MODE_PRIVATE)
+        prefs.edit {
+            putString("show_ui_tips", enabled.toString())
         }
     }
 

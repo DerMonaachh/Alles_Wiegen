@@ -21,6 +21,9 @@ object PatchNotes {
             versionHeader("Version 1.18")
             bulletPoint("Feedback vom geschlossenen Test eingearbeitet")
             bulletPoint("Rechtschreibfehler: Farpalette")
+            bulletPoint("Abgeschnittene UI: Reiter in Optionen, Buttons auf dem Startbildschirm und Events passen sich dynamisch an")
+            bulletPoint("Zielwert-Eingabe auf ganze Zahlen (Integer) beschränkt")
+            bulletPoint("UI-Tipps (Hinweise) ausblendbar & in Spiel-Optionen steuerbar")
 
             append("\n")
 

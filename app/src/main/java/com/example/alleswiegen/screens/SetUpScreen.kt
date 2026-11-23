@@ -27,6 +27,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -106,6 +108,7 @@ fun SetupScreen(viewModel: GameViewModel, uiState: GameUiState) {
 
     Column(modifier = Modifier
         .fillMaxSize()
+        .verticalScroll(rememberScrollState())
         .padding(16.dp)) {
 
         // Bluetooth Status Card
@@ -402,9 +405,7 @@ fun SetupScreen(viewModel: GameViewModel, uiState: GameUiState) {
 
         // Players Card Section
         Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f),
+            modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.background
@@ -463,10 +464,11 @@ fun SetupScreen(viewModel: GameViewModel, uiState: GameUiState) {
                 Spacer(Modifier.height(12.dp))
 
                 if (uiState.players.isEmpty()) {
-                    Column(
-                        modifier = Modifier.fillMaxSize(),
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(80.dp),
+                        contentAlignment = Alignment.Center
                     ) {
                         Text(
                             "Noch keine Spieler hinzugefügt",
@@ -475,11 +477,11 @@ fun SetupScreen(viewModel: GameViewModel, uiState: GameUiState) {
                         )
                     }
                 } else {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        items(uiState.players) { player ->
+                        uiState.players.forEach { player ->
                             Surface(
                                 color = MaterialTheme.colorScheme.surface,
                                 shape = RoundedCornerShape(12.dp),
@@ -533,29 +535,32 @@ fun SetupScreen(viewModel: GameViewModel, uiState: GameUiState) {
         ) {
             Button(
                 onClick = { viewModel.navigateTo(Screen.OPTIONS) },
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.height(56.dp),
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    //contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                 )
             ) {
-                Text("Optionen")
+                Icon(Icons.Default.Settings, contentDescription = "Optionen")
             }
             Button(
                 onClick = { viewModel.navigateTo(Screen.EVENT) },
-                modifier = Modifier.weight(1f),
+                modifier = Modifier
+                    .weight(1f)
+                    .height(56.dp),
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    //contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    containerColor = MaterialTheme.colorScheme.primary
                 )
             ) {
                 Text("Ergebnisse")
             }
             Button(
                 onClick = { viewModel.navigateTo(Screen.INITIAL_WEIGHING) },
-                modifier = Modifier.weight(1f),
+                modifier = Modifier
+                    .weight(1f)
+                    .height(56.dp),
                 shape = RoundedCornerShape(12.dp),
                 enabled = uiState.players.size >= 2,
                 colors = ButtonDefaults.buttonColors(

@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -24,7 +25,11 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Games
 import androidx.compose.material.icons.filled.QrCode
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -238,7 +243,7 @@ fun Events(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
@@ -353,8 +358,8 @@ fun Events(
             // --- Content Area ---
             Surface(
                 modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth(),
+                    .fillMaxWidth()
+                    .height(400.dp),
                 color = MaterialTheme.colorScheme.surfaceVariant,
                 shape = MaterialTheme.shapes.medium
             ) {
@@ -395,40 +400,58 @@ fun Events(
                 }
             }
 
-            // --- Footer Button ---
-            Row() {Button(
-                onClick = {
-                    editingEvent = null // New event
-                    showDialog = true
-                },
-
-                // ...
+            // --- Footer Buttons ---
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Icon(Icons.Default.Add, contentDescription = null)
-                Text("NEUES EVENT")
-            }
-                Spacer(modifier = Modifier.width(2.dp))
                 Button(
                     onClick = {
-                        showQrDialog=true
+                        editingEvent = null // New event
+                        showDialog = true
                     },
-
-                    // ...
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(56.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    )
                 ) {
-                    Icon(Icons.Default.QrCode, contentDescription = null)
-
+                    Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.width(4.dp))
+                    Text("Neu", maxLines = 1)
                 }
-                Spacer(modifier = Modifier.width(2.dp))
+                Button(
+                    onClick = {
+                        showQrDialog = true
+                    },
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(56.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                ) {
+                    Icon(Icons.Default.QrCode, contentDescription = "QR Code", modifier = Modifier.size(24.dp))
+                }
                 Button(
                     onClick = {
                         viewModel.navigateTo(Screen.ALL_EVENTS)
                     },
-
-                    // ...
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(56.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    )
                 ) {
-                    Icon(Icons.Default.Games, contentDescription = null)
-                    Text("Alle Spiele")
-
+                    Icon(Icons.Default.Games, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.width(4.dp))
+                    Text("Spiele", maxLines = 1)
                 }
             }
 

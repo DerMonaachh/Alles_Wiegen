@@ -157,6 +157,7 @@ data class GameUiState(
     val itemOverrides: Map<Int, ItemOverride> = emptyMap(),
     val showStartupMessage: Boolean = true,
     val showStartupDialog: Boolean = true,
+    val showUiTips: Boolean = true,
     val isServerRunning: Boolean = false,
     val isScanningBluetooth: Boolean = false,
     val discoveredBluetoothDevices: List<DiscoveredBluetoothDevice> = emptyList(),

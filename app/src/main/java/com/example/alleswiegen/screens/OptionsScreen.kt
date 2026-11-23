@@ -36,6 +36,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
+import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
@@ -77,8 +78,11 @@ fun OptionsScreen(viewModel: GameViewModel, uiState: GameUiState) {
 
 
     Column(modifier = Modifier.fillMaxSize()) {
-        // Die Material 3 Tab-Leiste
-        TabRow(selectedTabIndex = selectedTabIndex) {
+        // Die Material 3 Scrollable Tab-Leiste
+        ScrollableTabRow(
+            selectedTabIndex = selectedTabIndex,
+            edgePadding = 16.dp
+        ) {
             tabTitles.forEachIndexed { index, title ->
                 Tab(
                     selected = selectedTabIndex == index,
@@ -666,6 +670,29 @@ fun GameOptions(viewModel: GameViewModel, uiState: GameUiState,context: Context)
                         }
                         Switch(
                             checked = uiState.showJingle,
+                            onCheckedChange = null
+                        )
+                    }
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), thickness = 0.5.dp)
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(8.dp))
+                            .clickable { viewModel.toggleUiTips(!uiState.showUiTips, context) }
+                            .padding(vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("UI-Tipps anzeigen", style = MaterialTheme.typography.titleMedium)
+                            Text(
+                                "Erklärungen und Hinweise im Spiel",
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
+                        Switch(
+                            checked = uiState.showUiTips,
                             onCheckedChange = null
                         )
                     }

@@ -1,6 +1,7 @@
 package com.example.alleswiegen.screens
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,6 +17,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -23,9 +25,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.example.alleswiegen.GameUiState
 import com.example.alleswiegen.GameViewModel
@@ -36,6 +43,7 @@ fun SetTargetScreen(viewModel: GameViewModel, uiState: GameUiState) {
     var targetInput by remember { mutableStateOf("") }
     val leader = viewModel.getLeaderForNextRound()
     val focusManager = LocalFocusManager.current
+    val context = LocalContext.current
 
     Column(modifier = Modifier
         .fillMaxSize()
@@ -53,11 +61,75 @@ fun SetTargetScreen(viewModel: GameViewModel, uiState: GameUiState) {
                 }
             }
         }
+        if (uiState.showUiTips) {
+            Spacer(Modifier.height(16.dp))
+            Card(
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.surface),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp) // Sorgt für saubere Abstände zwischen den Absätzen
+                ) {
+                    // 1. Definition Zielwert
+                    Text(
+                        text = buildAnnotatedString {
+                            append("Der ")
+                            withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
+                                append("Zielwert")
+                            }
+                            append(" gibt die Menge an, die getrunken werden soll – nicht das Zielgewicht des Getränks.")
+                        },
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+
+                    // 2. Erklärung Persönliches Ziel
+                    Text(
+                        text = buildAnnotatedString {
+                            append("Daraus wird für jeden Spieler das ")
+                            withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
+                                append("persönliche Ziel")
+                            }
+                            append(" berechnet. Es setzt sich aus dem aktuellen Zielwert und dem Rückstand auf den Spieler zusammen, der bisher am meisten getrunken hat. Du findest diesen Wert auf dem nächsten Bildschirm in den ")
+                            withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
+                                append("Klammern")
+                            }
+                            append(".")
+                        },
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+
+                    // 3. Hinweis zur Festlegung
+                    Text(
+                        text = buildAnnotatedString {
+                            withStyle(SpanStyle(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)) {
+                                append("Hinweis: ")
+                            }
+                            append("Das Ziel wird immer von dem Spieler festgelegt, der in den bisherigen Runden am meisten getrunken hat (nicht zwingend vom besten Spieler).")
+                        },
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+
+                    HorizontalDivider(
+                        modifier = Modifier.padding(vertical = 4.dp),
+                        color = MaterialTheme.colorScheme.surfaceVariant
+                    )
+
+                    TextButton(
+                        onClick = { viewModel.toggleUiTips(false, context) },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("UI Hinweise nicht mehr anzeigen")
+                    }
+                }
+            }
+        }
 
         Spacer(Modifier.height(16.dp))
         OutlinedTextField(
             value = targetInput,
-            onValueChange = { targetInput = it },
+            onValueChange = { targetInput = it.filter { char -> char.isDigit() } },
             label = { Text("Zielwert für diese Runde (g/ml)") },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
             modifier = Modifier.fillMaxWidth(),
