@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -42,6 +43,7 @@ import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -133,13 +135,7 @@ fun ItemOverview(viewModel: GameViewModel, uiState: GameUiState, context: Contex
         verticalArrangement = Arrangement.spacedBy(12.dp),
         contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = 16.dp)
     ) {
-        item {
-            Text(
-                text = "Item Übersicht & Einstellungen",
-                style = MaterialTheme.typography.headlineSmall,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-        }
+
 
         items(uiState.getEffectiveItems()) { item ->
             ItemCard(item, viewModel, context)
@@ -270,18 +266,18 @@ fun BluetoothOptions(viewModel: GameViewModel, uiState: GameUiState, context: Co
         savedScales.putAll(viewModel.getSavedScales(context))
     }
 
+    DisposableEffect(Unit) {
+        onDispose {
+            viewModel.stopBluetoothScan()
+        }
+    }
+
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(12.dp),
         contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = 16.dp)
     ) {
-        item {
-            Text(
-                text = "Bluetooth Optionen",
-                style = MaterialTheme.typography.headlineSmall,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-        }
+
 
         // --- BLE SCANNER CARD ---
         item {
@@ -583,13 +579,7 @@ fun GameOptions(viewModel: GameViewModel, uiState: GameUiState,context: Context)
         verticalArrangement = Arrangement.spacedBy(12.dp),
         contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = 16.dp)
     ) {
-        item {
-            Text(
-                text = "Spiel Optionen",
-                style = MaterialTheme.typography.headlineSmall,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-        }
+
         item {
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -618,7 +608,7 @@ fun GameOptions(viewModel: GameViewModel, uiState: GameUiState,context: Context)
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(androidx.compose.foundation.shape.RoundedCornerShape(8.dp))
-                            .clickable { viewModel.toggleSortByRand(!uiState.sortByRank) }
+                            .clickable { viewModel.toggleSortByRand(!uiState.sortByRank, context) }
                             .padding(vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
@@ -662,9 +652,9 @@ fun GameOptions(viewModel: GameViewModel, uiState: GameUiState,context: Context)
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
-                            Text("Jingle abspielen", style = MaterialTheme.typography.titleMedium)
+                            Text("Bagel Jingle abspielen", style = MaterialTheme.typography.titleMedium)
                             Text(
-                                "Sound bei erfolgreichem Wiegen",
+                                "Sound und Video bei einem Fehler von 0g (\uD83E\uDD6F) abspielen.",
                                 style = MaterialTheme.typography.bodySmall
                             )
                         }
@@ -701,33 +691,176 @@ fun GameOptions(viewModel: GameViewModel, uiState: GameUiState,context: Context)
         }
 
         item {
-            Text(
-                text = "Punkte Berechnung",
-                style = MaterialTheme.typography.headlineSmall,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
+            PointsCalculationCard()
         }
-        item {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
-                )
+    }
+}
+
+@Composable
+fun PointsCalculationCard() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
+        )
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(bottom = 12.dp)
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
+                androidx.compose.material3.Surface(
+                    shape = androidx.compose.foundation.shape.CircleShape,
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                    modifier = Modifier.size(36.dp)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.width(12.dp))
+                Column {
                     Text(
-                        text = "Die Punkte (P) pro Spiel werden wie folgt berechnet:\nP=(A/2-Pos)+1+E\nWobei A die Spieler " +
-                                "Anzahl, Pos die Position (1 basiert) und E eine Wert basierend auf dem durchscnittlichen Fehler ist.\n" +
-                                "averageError <4.0 -> 3\n" +
-                                "averageError <=6 -> 2\n" +
-                                "averageError <=10 -> 1\n" +
-                                "averageError <=20 -> 0\n" +
-                                "sonst-> -1",
-                        style = MaterialTheme.typography.bodyMedium
+                        text = "PUNKTE-BERECHNUNG",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = "Formel & Abweichungspunkte pro Spiel",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
+
+            HorizontalDivider(
+                modifier = Modifier.padding(bottom = 12.dp),
+                thickness = 0.5.dp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
+            )
+
+            // Formel Box
+            androidx.compose.material3.Surface(
+                shape = RoundedCornerShape(12.dp),
+                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(
+                    modifier = Modifier.padding(12.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "P = ( A / 2 - Pos ) + 1 + E",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Legende
+            Text(
+                text = "Legende:",
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                LegendItem(symbol = "P", description = "Erzielte Gesamtpunkte pro Spiel")
+                LegendItem(symbol = "A", description = "Anzahl aller Spieler im Spiel")
+                LegendItem(symbol = "Pos", description = "Deine Platzierung (1 = 1. Platz, 2 = 2. Platz, ...)")
+                LegendItem(symbol = "E", description = "Bonus-/Malus-Punkte basierend auf dem Fehler")
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+            HorizontalDivider(thickness = 0.5.dp, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f))
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Fehler-Punkte Tabelle
+            Text(
+                text = "Fehler-Punkte (E):",
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                ErrorPointRow(range = "< 4,0 g", points = "+3 Punkte", isPositive = true)
+                ErrorPointRow(range = "4,0 – 6,0 g", points = "+2 Punkte", isPositive = true)
+                ErrorPointRow(range = "6,1 – 10,0 g", points = "+1 Punkt", isPositive = true)
+                ErrorPointRow(range = "10,1 – 20,0 g", points = "0 Punkte")
+                ErrorPointRow(range = "20,1 – 30,0 g", points = "-1 Punkt", isNegative = true)
+                ErrorPointRow(range = "> 30,0 g", points = "-2 Punkte", isNegative = true)
+            }
         }
+    }
+}
+
+@Composable
+private fun LegendItem(symbol: String, description: String) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        androidx.compose.material3.Surface(
+            shape = RoundedCornerShape(4.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant,
+            modifier = Modifier.padding(end = 8.dp)
+        ) {
+            Text(
+                text = symbol,
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+            )
+        }
+        Text(
+            text = description,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+@Composable
+private fun ErrorPointRow(
+    range: String,
+    points: String,
+    isPositive: Boolean = false,
+    isNegative: Boolean = false
+) {
+    val pointColor = when {
+        isPositive -> MaterialTheme.colorScheme.primary
+        isNegative -> MaterialTheme.colorScheme.error
+        else -> MaterialTheme.colorScheme.onSurfaceVariant
+    }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 2.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = "Durchschnittlicher Fehler $range",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        Text(
+            text = points,
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.Bold,
+            color = pointColor
+        )
     }
 }
 
@@ -859,7 +992,7 @@ fun GeneralOptions(viewModel: GameViewModel, uiState: GameUiState) {
                             .clickable { folderPickerLauncher.launch(null) }
                             .padding(vertical = 8.dp)
                     ) {
-                        Text("Jingle Ordner", style = MaterialTheme.typography.titleMedium)
+                        Text("Bagel Ordner", style = MaterialTheme.typography.titleMedium)
                         Text(
                             text = uiState.jingleLocation.ifEmpty { "Kein Ordner ausgewählt" },
                             style = MaterialTheme.typography.bodySmall,

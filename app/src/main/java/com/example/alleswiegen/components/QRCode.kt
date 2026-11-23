@@ -40,7 +40,7 @@ fun QrCodeDialog(csvData: String, onDismiss: () -> Unit) {
                 modifier = Modifier.padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("Ranking QR Code", style = MaterialTheme.typography.titleMedium)
+                Text("QR Code des Spiels, Achtung bei großen Spielen ist die Übertragung via csv besser geeignet.", style = MaterialTheme.typography.titleMedium)
                 Spacer(modifier = Modifier.height(16.dp))
 
                 bitmap?.let {

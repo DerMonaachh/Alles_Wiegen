@@ -52,7 +52,7 @@ class GameViewModel (private val repository: PlayerScoreRepository) : ViewModel(
     val allScores: StateFlow<List<PlayerScoreEntry>> = repository.allScores
         .stateIn(
             scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
+            started = SharingStarted.Eagerly,
             initialValue = emptyList()
         )
 
@@ -186,8 +186,14 @@ class GameViewModel (private val repository: PlayerScoreRepository) : ViewModel(
     fun toggleExenByNull(enabled: Boolean) {
         _uiState.update { it.copy(exenByNull = enabled) }
     }
-    fun toggleSortByRand(enabled: Boolean) {
+    fun toggleSortByRand(enabled: Boolean, context: Context? = null) {
         _uiState.update { it.copy(sortByRank = enabled) }
+        context?.let { ctx ->
+            val prefs = ctx.getSharedPreferences("AllesWiegenPrefs", android.content.Context.MODE_PRIVATE)
+            prefs.edit {
+                putString("sort_by_rank", enabled.toString())
+            }
+        }
     }
     fun toggleJingle(enabled: Boolean,context: Context) {
         _uiState.update { it.copy(showJingle =  enabled) }
@@ -282,14 +288,14 @@ class GameViewModel (private val repository: PlayerScoreRepository) : ViewModel(
                 }
             },
             onScanFinished = {
-                _uiState.update { it.copy(isScanningBluetooth = false) }
+                _uiState.update { it.copy(isScanningBluetooth = false, discoveredBluetoothDevices = emptyList()) }
             }
         )
     }
 
     fun stopBluetoothScan() {
         bluetoothService?.stopScan()
-        _uiState.update { it.copy(isScanningBluetooth = false) }
+        _uiState.update { it.copy(isScanningBluetooth = false, discoveredBluetoothDevices = emptyList()) }
     }
 
     fun selectDiscoveredDevice(context: Context, device: DiscoveredBluetoothDevice) {
@@ -689,7 +695,8 @@ class GameViewModel (private val repository: PlayerScoreRepository) : ViewModel(
 
         var anyIssue=""
         // 2. Map the player lines (skipping line 0 (time) and line 1 (header))
-        val players = lines.drop(2).map { line ->
+        val playerLines = lines.drop(2).filter { it.isNotBlank() }
+        val players = playerLines.map { line ->
             val parts = line.split(",")
             if (parts.size >= 10) {
                 try {
@@ -704,7 +711,7 @@ class GameViewModel (private val repository: PlayerScoreRepository) : ViewModel(
                         sipCountWithoutExer = parts[7].toInt(),
                         bagelCount = parts[8].toInt(),
                         timestamp = extractedTime, // Use the time from the top
-                        playerCount = lines.size - 2, // Total players is total lines minus meta lines
+                        playerCount = playerLines.size, // Total players is total player lines
                         gameMode = parts[9].toInt()
 
                     )
@@ -797,26 +804,30 @@ class GameViewModel (private val repository: PlayerScoreRepository) : ViewModel(
     private fun generateInfoText(currentPlayers: List<Player>,targetAmount: Int =0,short: Boolean=false,currentState: GameUiState): Pair<String, Int> {
         val sb = StringBuilder()
         var exxer = 0
-        sb.append("Ziel: ${targetAmount}\n")
+        //sb.append("Ziel: ${targetAmount}\n")
         if (currentState.currentRound>0 &&  !short){
             // 1. Schluckspechte (Höchster Fehler)
             val maxVal = currentPlayers.maxOfOrNull { abs(it.lastError) } ?: 0
             val badGuys = currentPlayers.filter { abs(it.lastError) == maxVal }
+            val perfectOnes = currentPlayers.filter { it.lastError == 0 }
 
-            if (badGuys.isNotEmpty()) {
-                val names = badGuys.joinToString(" und ") { it.name }
-                val verb = if (badGuys.size > 1) "müssen" else "muss"
-                sb.append("$names $verb einen Strafschluck trinken. \n")
+            if  (!(perfectOnes.isNotEmpty() and currentState.exenByNull)){
+                if (badGuys.isNotEmpty()) {
+                    val names = badGuys.joinToString(" und ") { it.name }
+                    val verb = if (badGuys.size > 1) "müssen" else "muss"
+                    sb.append("$names $verb einen Strafschluck trinken. \n")
+                }
             }
+
             val almostGood=currentPlayers.filter { abs(it.lastError) == 1 }
             // 2. Perfekte / Pussys
-            val perfectOnes = currentPlayers.filter { it.lastError == 0 }
+
 
             if (perfectOnes.isNotEmpty()) {
                 if (currentState.exenByNull) {
                     val names = perfectOnes.joinToString(" und ") { it.name }
-                    val verb = if (perfectOnes.size > 1) "dürfen" else "darf ein"
-                    sb.append("$names $verb Kandidat für Bagel auswählen!\n")
+                    val verb = if (perfectOnes.size > 1) "dürfen" else "darf einen"
+                    sb.append("$names $verb Kandidaten für Bagel auswählen!\n")
 
                     exxer = perfectOnes.size
                 } else {
@@ -1214,7 +1225,11 @@ class GameViewModel (private val repository: PlayerScoreRepository) : ViewModel(
             currentState.copy(currentWeights = updatedWeights)
         }
     }
+    private var settingsLoaded = false
+
     fun loadSavedSettings(context: android.content.Context) {
+        if (settingsLoaded) return
+        settingsLoaded = true
         val prefs = context.getSharedPreferences("AllesWiegenPrefs", android.content.Context.MODE_PRIVATE)
 
         // 1. Vorherige Spieler laden (dein bestehender Code)
@@ -1230,6 +1245,7 @@ class GameViewModel (private val repository: PlayerScoreRepository) : ViewModel(
         val jingleLocation = prefs.getString("jingleLocation", "") ?: ""
         val showStartupMessage = (prefs.getString("show_startup_message", "true") ?: "true").toBoolean()
         val showUiTips = (prefs.getString("show_ui_tips", "true") ?: "true").toBoolean()
+        val sortByRank = (prefs.getString("sort_by_rank", "false") ?: "false").toBoolean()
 
         val itemOverrides = mutableMapOf<Int, ItemOverride>()
         AvailableItems.getAllIds().forEach { id ->
@@ -1257,6 +1273,7 @@ class GameViewModel (private val repository: PlayerScoreRepository) : ViewModel(
             showStartupMessage = showStartupMessage,
             showStartupDialog = showStartupMessage,
             showUiTips = showUiTips,
+            sortByRank = sortByRank,
             itemOverrides = itemOverrides,
         ) }
     }

@@ -50,20 +50,23 @@ fun RankingScreen(viewModel: GameViewModel, uiState: GameUiState) {
     // Berechnungen der verschiedenen Listen
     val displayList = when (selectedMode) {
         RankingMode.Gesamt -> {
-            uiState.players.sortedBy { it.totalError }.map { Triple(it, it.totalError, 0) }
+            uiState.players.sortedBy { it.totalError }.map { Triple(it, it.totalError, "") }
         }
 
         RankingMode.OhneWorst -> {
             uiState.players.map { player ->
                 val worstSip = player.sipsErrors.maxOfOrNull { it.amount } ?: 0
-                Triple(player, (player.totalError - worstSip).coerceAtLeast(0), worstSip)
+                val detailText = if (worstSip > 0) " (Ignoriert: ${worstSip}g max. Fehler)" else ""
+                Triple(player, (player.totalError - worstSip).coerceAtLeast(0), detailText)
             }.sortedBy { it.second }
         }
 
         RankingMode.OhneExxer -> {
             uiState.players.map { player ->
                 val regularErrors = player.sipsErrors.filter { !it.exxer }.sumOf { it.amount }
-                Triple(player, regularErrors, 0)
+                val bagelErrors = player.sipsErrors.filter { it.exxer }.sumOf { it.amount }
+                val detailText = if (bagelErrors > 0) " (Ignoriert: ${bagelErrors}g Bagel)" else ""
+                Triple(player, regularErrors, detailText)
             }.sortedBy { it.second }
         }
 
@@ -72,7 +75,12 @@ fun RankingScreen(viewModel: GameViewModel, uiState: GameUiState) {
                 val regularSips = player.sipsErrors.filter { !it.exxer }
                 val sum = regularSips.sumOf { it.amount }
                 val worst = regularSips.maxOfOrNull { it.amount } ?: 0
-                Triple(player, (sum - worst).coerceAtLeast(0), worst)
+                val bagelErrors = player.sipsErrors.filter { it.exxer }.sumOf { it.amount }
+                val parts = mutableListOf<String>()
+                if (bagelErrors > 0) parts.add("${bagelErrors}g Bagel")
+                if (worst > 0) parts.add("${worst}g max. Fehler")
+                val detailText = if (parts.isNotEmpty()) " (Ignoriert: ${parts.joinToString(", ")})" else ""
+                Triple(player, (sum - worst).coerceAtLeast(0), detailText)
             }.sortedBy { it.second }
         }
     }
@@ -111,12 +119,10 @@ fun RankingScreen(viewModel: GameViewModel, uiState: GameUiState) {
                 LazyVerticalGrid(columns = androidx.compose.foundation.lazy.grid.GridCells.Fixed(3), modifier = Modifier.weight(0.7f),horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     items(displayList.withIndex().toList()) {  (index, data) ->
-                        val (player, score, detail) = data
+                        val (player, score, detailText) = data
                         ListItem(
                             headlineContent = { Text("${index + 1}. ${player.name}") },
                             supportingContent = {
-                                val detailText =
-                                    if (detail > 0) " (Ignoriert: ${detail}g)" else ""
                                 Text("Fehler: ${score}g$detailText")
                             },
                             trailingContent = {
@@ -139,12 +145,10 @@ fun RankingScreen(viewModel: GameViewModel, uiState: GameUiState) {
             else{
                     LazyColumn(modifier = Modifier.fillMaxSize()) {
                         items(displayList.withIndex().toList()) { (index, data) ->
-                            val (player, score, detail) = data
+                            val (player, score, detailText) = data
                             ListItem(
                                 headlineContent = { Text("${index + 1}. ${player.name}") },
                                 supportingContent = {
-                                    val detailText =
-                                        if (detail > 0) " (Ignoriert: ${detail}g)" else ""
                                     Text("Fehler: ${score}g$detailText")
                                 },
                                 trailingContent = {

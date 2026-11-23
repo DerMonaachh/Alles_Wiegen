@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -108,6 +109,7 @@ fun SetupScreen(viewModel: GameViewModel, uiState: GameUiState) {
 
     Column(modifier = Modifier
         .fillMaxSize()
+        .imePadding()
         .verticalScroll(rememberScrollState())
         .padding(16.dp)) {
 
@@ -441,7 +443,7 @@ fun SetupScreen(viewModel: GameViewModel, uiState: GameUiState) {
                 OutlinedTextField(
                     value = nameInput,
                     onValueChange = { nameInput = it },
-                    label = { Text("Neuer Spieler Name") },
+                    label = { Text("Neuer Spielername") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     shape = RoundedCornerShape(12.dp),
@@ -571,6 +573,9 @@ fun SetupScreen(viewModel: GameViewModel, uiState: GameUiState) {
                 Text("Wiegen!", fontWeight = FontWeight.Bold)
             }
         }
+
+        // Unsichtbarer Abstandhalter am Ende, damit beim Scrollen mit Tastatur noch mehr Platz nach unten ist
+        Spacer(Modifier.height(100.dp))
     }
 
     if (showPreviousPlayers) {
