@@ -122,34 +122,40 @@ fun Events(
     var showConfirmDialog by remember { mutableStateOf(false) }
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-    val scannerOptions = com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions.Builder()
-        .setBarcodeFormats(com.google.mlkit.vision.barcode.common.Barcode.FORMAT_QR_CODE) // Korrekte Referenz
-        .enableAutoZoom()
-        .build()
-
-    val scanner = remember { com.google.mlkit.vision.codescanner.GmsBarcodeScanning.getClient(context, scannerOptions) }
+    val scannerOptions = remember {
+        com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions.Builder()
+            .setBarcodeFormats(com.google.mlkit.vision.barcode.common.Barcode.FORMAT_QR_CODE)
+            .enableAutoZoom()
+            .build()
+    }
 
     // 2. Logik für den Scanner-Aufruf
     fun startScanner() {
-        scanner.startScan()
-            .addOnSuccessListener { barcode ->
-                val rawValue: String? = barcode.rawValue
-                if (rawValue != null) {
-                    // Hier wird noch nichts verarbeitet, nur gespeichert
-                    scannedText = rawValue
-                    showConfirmDialog = true
+        try {
+            val scanner = com.google.mlkit.vision.codescanner.GmsBarcodeScanning.getClient(context, scannerOptions)
+            scanner.startScan()
+                .addOnSuccessListener { barcode ->
+                    val rawValue: String? = barcode.rawValue
+                    if (rawValue != null) {
+                        // Hier wird noch nichts verarbeitet, nur gespeichert
+                        scannedText = rawValue
+                        showConfirmDialog = true
+                    }
                 }
-            }
-            .addOnFailureListener { e ->
-                if (e is com.google.android.gms.common.api.ApiException && e.statusCode == 17) {
-                    // Canceled by User
-                } else {
-                    Toast.makeText(context, "Fehler beim Scannen: ${e.message}", Toast.LENGTH_SHORT).show()
+                .addOnFailureListener { e ->
+                    if (e is com.google.android.gms.common.api.ApiException && e.statusCode == 17) {
+                        // Canceled by User
+                    } else {
+                        Toast.makeText(context, "Fehler beim Scannen: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
                 }
-            }
-            .addOnCompleteListener {
-                showQrDialog = false
-            }
+                .addOnCompleteListener {
+                    showQrDialog = false
+                }
+        } catch (e: Exception) {
+            Toast.makeText(context, "QR-Scanner auf diesem Gerät nicht verfügbar: ${e.message}", Toast.LENGTH_SHORT).show()
+            showQrDialog = false
+        }
     }
 
 

@@ -34,7 +34,7 @@ class GameViewModel (private val repository: PlayerScoreRepository) : ViewModel(
     private val _uiState = MutableStateFlow(GameUiState())
     val uiState: StateFlow<GameUiState> = _uiState.asStateFlow()
     private val timeRange = MutableStateFlow(
-        (System.currentTimeMillis() - (30 * 24 * 60 * 60*1000 )) to System.currentTimeMillis()  )
+        (System.currentTimeMillis() - (30L * 24L * 60L * 60L * 1000L)) to System.currentTimeMillis()  )
 
 
 
@@ -128,8 +128,8 @@ class GameViewModel (private val repository: PlayerScoreRepository) : ViewModel(
         _uiState.update { it.copy(nfcIsUsed = true) }
     }
     fun setTimeFilter(daysAgo: Int) {
-        val start = System.currentTimeMillis() - (daysAgo * 24 * 60 * 60 * 1000)
-        val end = System.currentTimeMillis()  + (4 * 60 * 60 * 1000)
+        val start = System.currentTimeMillis() - (daysAgo.toLong() * 24L * 60L * 60L * 1000L)
+        val end = System.currentTimeMillis()  + (4L * 60L * 60L * 1000L)
         timeRange.value = start to end
     }
     fun setTimeFilterwithDates(start: Long, end: Long) {

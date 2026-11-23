@@ -18,8 +18,8 @@ android {
         applicationId = "com.zygonlabs.alleswiegen"
         minSdk = 31
         targetSdk = 36
-        versionCode = 3
-        versionName = "1.18"
+        versionCode = 4
+        versionName = "1.18.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -102,7 +102,5 @@ dependencies {
     implementation("com.patrykandpatrick.vico:compose-m3:1.15.0")
     implementation("com.patrykandpatrick.vico:core:1.15.0")
     implementation("com.google.zxing:core:3.5.3")
-    dependencies {
-        implementation("com.google.android.gms:play-services-code-scanner:16.1.0")
-    }
+    implementation("com.google.android.gms:play-services-code-scanner:16.1.0")
 }

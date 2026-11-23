@@ -157,11 +157,16 @@ fun transformScoresToPlayerRanks(viewModel: GameViewModel, gameMode: String = "N
                 runningClassicPoints+=newPoints.first
                 runningExxerPoints+=newPoints.second
 
-                val average=(runningAverage*runningSipCount+score.averageError*score.sipCount)/(runningSipCount+score.sipCount)
-                runningAverage=average
-                runningSipCount+=score.sipCount
+                val totalSips = runningSipCount + score.sipCount
+                val average = if (totalSips > 0) {
+                    (runningAverage * runningSipCount + score.averageError * score.sipCount) / totalSips.toDouble()
+                } else 0.0
+                runningAverage = average
+                runningSipCount += score.sipCount
 
-
+                val bagelRate = if (runningGameCount > 0) {
+                    runningBagelCount.toDouble() / runningGameCount.toDouble()
+                } else 0.0
 
                 // Den globalen X-Achsen Index bestimmen
                 val xAxisValue = timeToXAxisMap[score.timestamp] ?: 0L
@@ -171,7 +176,7 @@ fun transformScoresToPlayerRanks(viewModel: GameViewModel, gameMode: String = "N
                     number= xAxisValue, // Der gemappte Index (0, 1, 2...)
 
                     averageError = average,
-                    bagelRate = runningBagelCount.toDouble()/runningGameCount.toDouble(),
+                    bagelRate = bagelRate,
                     bagels = runningBagelCount,
                     // Deine generische Punkte-Logik
                     pointsByErrorClassic = runningClassicPoints,
