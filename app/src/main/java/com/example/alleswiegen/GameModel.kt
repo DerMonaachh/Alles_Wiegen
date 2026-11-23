@@ -140,6 +140,7 @@ data class GameUiState(
     val info: String = "Viel Spaß",
     val exenByNull: Boolean=true,
     val sortByRank: Boolean=false,
+    val hidePlacement: Boolean=false,
     val showJingle: Boolean=true,
     val jingleLocation: String="",
     val vibrate: Boolean=true,

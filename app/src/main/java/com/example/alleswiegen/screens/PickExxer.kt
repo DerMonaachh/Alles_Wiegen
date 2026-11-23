@@ -153,6 +153,7 @@ fun PickExxerScreen(viewModel: GameViewModel, uiState: GameUiState) {
                     PlayerPickCard(
                         player = player,
                         isCandidate = isCandidate,
+                        hidePlacement = uiState.hidePlacement,
                         onSelect = { viewModel.pickExxer(player.name) }
                     )
                 }
@@ -171,6 +172,7 @@ fun PickExxerScreen(viewModel: GameViewModel, uiState: GameUiState) {
                     PlayerPickCard(
                         player = player,
                         isCandidate = isCandidate,
+                        hidePlacement = uiState.hidePlacement,
                         onSelect = { viewModel.pickExxer(player.name) }
                     )
                 }
@@ -183,6 +185,7 @@ fun PickExxerScreen(viewModel: GameViewModel, uiState: GameUiState) {
 private fun PlayerPickCard(
     player: Player,
     isCandidate: Boolean,
+    hidePlacement: Boolean = false,
     onSelect: () -> Unit
 ) {
 
@@ -258,7 +261,7 @@ private fun PlayerPickCard(
 
                 val errorSign = if (player.lastError > 0) "+${player.lastError}" else "${player.lastError}"
                 Text(
-                    text = "Letzter Fehler: $errorSign g  •  Gesamt: ${player.totalError} g",
+                    text = "Letzter Fehler: $errorSign g" + if (hidePlacement) "" else "  •  Gesamt: ${player.totalError} g",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

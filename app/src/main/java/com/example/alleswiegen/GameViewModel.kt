@@ -195,6 +195,15 @@ class GameViewModel (private val repository: PlayerScoreRepository) : ViewModel(
             }
         }
     }
+    fun toggleHidePlacement(enabled: Boolean, context: Context? = null) {
+        _uiState.update { it.copy(hidePlacement = enabled) }
+        context?.let { ctx ->
+            val prefs = ctx.getSharedPreferences("AllesWiegenPrefs", android.content.Context.MODE_PRIVATE)
+            prefs.edit {
+                putString("hide_placement", enabled.toString())
+            }
+        }
+    }
     fun toggleJingle(enabled: Boolean,context: Context) {
         _uiState.update { it.copy(showJingle =  enabled) }
         val prefs = context.getSharedPreferences("AllesWiegenPrefs", android.content.Context.MODE_PRIVATE)
@@ -1246,6 +1255,7 @@ class GameViewModel (private val repository: PlayerScoreRepository) : ViewModel(
         val showStartupMessage = (prefs.getString("show_startup_message", "true") ?: "true").toBoolean()
         val showUiTips = (prefs.getString("show_ui_tips", "true") ?: "true").toBoolean()
         val sortByRank = (prefs.getString("sort_by_rank", "false") ?: "false").toBoolean()
+        val hidePlacement = (prefs.getString("hide_placement", "false") ?: "false").toBoolean()
 
         val itemOverrides = mutableMapOf<Int, ItemOverride>()
         AvailableItems.getAllIds().forEach { id ->
@@ -1274,6 +1284,7 @@ class GameViewModel (private val repository: PlayerScoreRepository) : ViewModel(
             showStartupDialog = showStartupMessage,
             showUiTips = showUiTips,
             sortByRank = sortByRank,
+            hidePlacement = hidePlacement,
             itemOverrides = itemOverrides,
         ) }
     }

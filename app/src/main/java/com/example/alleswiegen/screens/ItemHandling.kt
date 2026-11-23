@@ -130,6 +130,7 @@ fun ItemHandling(viewModel: GameViewModel, uiState: GameUiState) {
                     player = player,
                     isSelected = selectedPlayerName == player.name,
                     isTargetMode = targetMode,
+                    hidePlacement = uiState.hidePlacement,
                     onClick = {
                         if (targetMode) {
                             selectedPlayerName?.let { trigger ->
@@ -164,6 +165,7 @@ fun PlayerItemCard(
     player: Player,
     isSelected: Boolean,
     isTargetMode: Boolean,
+    hidePlacement: Boolean = false,
     onClick: () -> Unit
 ) {
     val hasItem = player.items.isNotEmpty()
@@ -206,8 +208,13 @@ fun PlayerItemCard(
             Spacer(modifier = Modifier.width(16.dp))
 
             Column(modifier = Modifier.weight(1f)) {
+                val headerText = if (hidePlacement) {
+                    player.name
+                } else {
+                    "${player.position}. ${player.name} Fehler: ${player.totalError}"
+                }
                 Text(
-                    text = "${player.position}. ${player.name} Fehler: ${player.totalError}",
+                    text = headerText,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )

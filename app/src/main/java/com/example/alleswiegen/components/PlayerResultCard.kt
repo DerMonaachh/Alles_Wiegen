@@ -163,7 +163,8 @@ fun PlayerResultCard(
     onCaptured: (String) -> Unit,
     inputField: @Composable () -> Unit,
     modifier: Modifier = Modifier,
-    landscape: Boolean=false
+    landscape: Boolean=false,
+    hidePlacement: Boolean = false
 ) {
     val releventError=if (enteredValue==""){
         player.lastError
@@ -195,7 +196,7 @@ fun PlayerResultCard(
                 horizontalArrangement = Arrangement.Center
             ) {
                 Spacer(modifier= Modifier.width(10.dp))
-                InnerResultCadd(releventError, releventAbsolutError, player, liveWeight, onCaptured, round, landscape,inputField)
+                InnerResultCadd(releventError, releventAbsolutError, player, liveWeight, onCaptured, round, landscape, hidePlacement, inputField)
 
             }
 

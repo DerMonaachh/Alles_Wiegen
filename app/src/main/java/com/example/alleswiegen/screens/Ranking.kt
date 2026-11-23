@@ -21,9 +21,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ShowChart
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import com.example.alleswiegen.GameUiState
 import com.example.alleswiegen.GameViewModel
 import com.example.alleswiegen.PlayerScoreEntry
+import com.example.alleswiegen.components.EvaluationGraphDialog
 import com.example.alleswiegen.getRankOf
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.qrcode.QRCodeWriter
@@ -45,6 +50,9 @@ fun RankingScreen(viewModel: GameViewModel, uiState: GameUiState) {
     var selectedMode by remember { mutableStateOf(RankingMode.Gesamt) }
     val context = LocalContext.current
     var showQrDialog by remember { mutableStateOf(false) }
+    var isResultExpanded by remember { mutableStateOf(false) }
+    var showEvaluationGraph by remember { mutableStateOf(false) }
+
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
     // Berechnungen der verschiedenen Listen
@@ -115,35 +123,89 @@ fun RankingScreen(viewModel: GameViewModel, uiState: GameUiState) {
 
             Spacer(Modifier.height(12.dp))
 
-            if (isLandscape){
-                LazyVerticalGrid(columns = androidx.compose.foundation.lazy.grid.GridCells.Fixed(3), modifier = Modifier.weight(0.7f),horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    items(displayList.withIndex().toList()) {  (index, data) ->
-                        val (player, score, detailText) = data
-                        ListItem(
-                            headlineContent = { Text("${index + 1}. ${player.name}") },
-                            supportingContent = {
-                                Text("Fehler: ${score}g$detailText")
-                            },
-                            trailingContent = {
-                                if (index == 0) Text(
-                                    "🏆",
-                                    style = MaterialTheme.typography.headlineSmall
-                                )
-                            },
-                            colors = ListItemDefaults.colors(
-                                containerColor = if (index == 0) MaterialTheme.colorScheme.primaryContainer.copy(
-                                    alpha = 0.3f
-                                ) else MaterialTheme.colorScheme.surface
-                            )
-                        )
-                        HorizontalDivider(
-                            thickness = 0.5.dp,
-                            color = MaterialTheme.colorScheme.outlineVariant
-                        )}}
+            // Haupt-Aktions-Button: Bewertung starten
+            Button(
+                onClick = { showEvaluationGraph = true },
+                modifier = Modifier.fillMaxWidth(),
+                contentPadding = PaddingValues(12.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ShowChart,
+                    contentDescription = null,
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Bewertung starten",
+                    style = MaterialTheme.typography.titleMedium
+                )
             }
-            else{
-                    LazyColumn(modifier = Modifier.fillMaxSize()) {
+
+            Spacer(Modifier.height(8.dp))
+
+            // Expandable Header für die Platzierungsergebnisse
+            OutlinedCard(
+                onClick = { isResultExpanded = !isResultExpanded },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = if (isResultExpanded) "Ergebnisse einklappen" else "Ergebnisse anzeigen / ausklappen",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Icon(
+                        imageVector = if (isResultExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(12.dp))
+
+            if (isResultExpanded) {
+                if (isLandscape){
+                    LazyVerticalGrid(
+                        columns = androidx.compose.foundation.lazy.grid.GridCells.Fixed(3),
+                        modifier = Modifier.weight(1f),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(2.dp)
+                    ) {
+                        items(displayList.withIndex().toList()) {  (index, data) ->
+                            val (player, score, detailText) = data
+                            ListItem(
+                                headlineContent = { Text("${index + 1}. ${player.name}") },
+                                supportingContent = {
+                                    Text("Fehler: ${score}g$detailText")
+                                },
+                                trailingContent = {
+                                    if (index == 0) Text(
+                                        "🏆",
+                                        style = MaterialTheme.typography.headlineSmall
+                                    )
+                                },
+                                colors = ListItemDefaults.colors(
+                                    containerColor = if (index == 0) MaterialTheme.colorScheme.primaryContainer.copy(
+                                        alpha = 0.3f
+                                    ) else MaterialTheme.colorScheme.surface
+                                )
+                            )
+                            HorizontalDivider(
+                                thickness = 0.5.dp,
+                                color = MaterialTheme.colorScheme.outlineVariant
+                            )
+                        }
+                    }
+                }
+                else {
+                    LazyColumn(modifier = Modifier.weight(1f)) {
                         items(displayList.withIndex().toList()) { (index, data) ->
                             val (player, score, detailText) = data
                             ListItem(
@@ -169,24 +231,38 @@ fun RankingScreen(viewModel: GameViewModel, uiState: GameUiState) {
                             )
                         }
                     }
+                }
+            } else {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Ergebnis ist eingeklappt.\nStarte oben die Bewertung oder klappe die Liste aus.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    )
+                }
             }
-
-
         }
 
         // Button unten fixiert
         Box(modifier = Modifier.padding(16.dp)) {
-            Row() { OutlinedButton(
-                onClick = { viewModel.resetGame(context) },
-                modifier = Modifier.weight(0.5f)
-            ) {
-                Text("Hauptmenü")
-            }
+            Row() {
+                OutlinedButton(
+                    onClick = { viewModel.resetGame(context) },
+                    modifier = Modifier.weight(0.5f)
+                ) {
+                    Text("Hauptmenü")
+                }
                 OutlinedButton(
                     onClick = { showQrDialog=true },
                     modifier = Modifier.weight(0.5f)
                 ) {
-                    Text("CR Code")
+                    Text("QR Code")
                 }
             }
 
@@ -194,6 +270,15 @@ fun RankingScreen(viewModel: GameViewModel, uiState: GameUiState) {
     }
     if (showQrDialog) {
         QrCodeDialog(csvData = viewModel.generateCsvForQr(), onDismiss = { showQrDialog = false })
+    }
+    if (showEvaluationGraph) {
+        EvaluationGraphDialog(
+            players = uiState.players,
+            onDismiss = {
+                showEvaluationGraph = false
+                isResultExpanded = true
+            }
+        )
     }
 }
 

@@ -608,6 +608,48 @@ fun GameOptions(viewModel: GameViewModel, uiState: GameUiState,context: Context)
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(androidx.compose.foundation.shape.RoundedCornerShape(8.dp))
+                            .clickable { viewModel.toggleHidePlacement(!uiState.hidePlacement, context) }
+                            .padding(vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Platzierung Verbergen",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            Text(
+                                text = "Gesamtfehler und Platzierung nicht anzeigen.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+
+                        Switch(
+                            checked = uiState.hidePlacement,
+                            onCheckedChange = null,
+                            thumbContent = if (uiState.hidePlacement) {
+                                {
+                                    Icon(
+                                        imageVector = Icons.Filled.Check,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(SwitchDefaults.IconSize),
+                                    )
+                                }
+                            } else null
+                        )
+                    }
+                    HorizontalDivider(
+                        modifier = Modifier.padding(vertical = 8.dp),
+                        thickness = 0.5.dp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
+                    )
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(androidx.compose.foundation.shape.RoundedCornerShape(8.dp))
                             .clickable { viewModel.toggleSortByRand(!uiState.sortByRank, context) }
                             .padding(vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically,
@@ -1009,7 +1051,7 @@ fun GeneralOptions(viewModel: GameViewModel, uiState: GameUiState) {
                     )
                     Spacer(Modifier.height(8.dp))
                     Text(
-                        text = "App Version 1.16" ,
+                        text = "App Version 1.18" ,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.primary
                     )

@@ -220,7 +220,11 @@ fun PlayerWeightingScreen(viewModel: GameViewModel, uiState: GameUiState) {
 
                 }
                 Spacer(modifier = Modifier.width(8.dp))
-                val effPlayers=if (uiState.sortByRank){      uiState.players.sortedBy { it.position }  }else  { uiState.players }
+                val effPlayers = if (uiState.sortByRank && !uiState.hidePlacement) { 
+                    uiState.players.sortedBy { it.position } 
+                } else { 
+                    uiState.players 
+                }
                 LazyVerticalGrid(columns = androidx.compose.foundation.lazy.grid.GridCells.Fixed(2), modifier = Modifier.weight(0.7f),horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     items(effPlayers) { player ->
@@ -235,6 +239,7 @@ fun PlayerWeightingScreen(viewModel: GameViewModel, uiState: GameUiState) {
                                 round = uiState.currentRound,
                                 enteredValue = weightStr,
                                 isError = isError, // Reiche den Fehlerstatus an die Card weiter
+                                hidePlacement = uiState.hidePlacement,
                                 onCaptured = { value ->
                                     //currentWeights[player.name] = value
                                     viewModel.updateWeight(value, player.name)
@@ -349,7 +354,11 @@ fun PlayerWeightingScreen(viewModel: GameViewModel, uiState: GameUiState) {
                 modifier = Modifier.padding(top = 8.dp)
             )
         }
-        val effPlayers=if (uiState.sortByRank){      uiState.players.sortedBy { it.position }  }else  { uiState.players }
+        val effPlayers = if (uiState.sortByRank && !uiState.hidePlacement) { 
+            uiState.players.sortedBy { it.position } 
+        } else { 
+            uiState.players 
+        }
         LazyColumn(modifier = Modifier.weight(1f)) {
             items(effPlayers) { player ->
 
@@ -364,6 +373,7 @@ fun PlayerWeightingScreen(viewModel: GameViewModel, uiState: GameUiState) {
                             round = uiState.currentRound,
                             enteredValue = weightStr,
                             isError = isError, // Reiche den Fehlerstatus an die Card weiter
+                            hidePlacement = uiState.hidePlacement,
                             onCaptured = { value ->
                                 //currentWeights[player.name] = value
                                 viewModel.updateWeight(value, player.name)

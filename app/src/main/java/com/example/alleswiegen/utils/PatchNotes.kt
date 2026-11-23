@@ -19,9 +19,9 @@ object PatchNotes {
             append("\n")
 
             versionHeader("Version 1.18")
+            bulletPoint("Feedback vom geschlossenen Test eingearbeitet")
             bulletPoint("Einwiegen vor und nach dem Bagel visuell überarbeitet")
             bulletPoint("Beschreibung der Punkte-Berechnung in den Optionen visuell & grammatikalisch überarbeitet")
-            bulletPoint("Feedback vom geschlossenen Test eingearbeitet")
             bulletPoint("Rechtschreibfehler: Farpalette")
             bulletPoint("Abgeschnittene UI: Reiter in Optionen, Buttons auf dem Startbildschirm und Events passen sich dynamisch an")
             bulletPoint("Zielwert-Eingabe auf ganze Zahlen (Integer) beschränkt")
@@ -33,6 +33,7 @@ object PatchNotes {
             bulletPoint("Nach dem Beenden des Scan-Vorgangs werden keine Bluetooth-Waagen mehr angezeigt")
             bulletPoint("Leerzeile bei Events entfernt.")
             bulletPoint("Sortierungs-Einstellungen werden zwischen App Starts gespeichert")
+            bulletPoint("Animation des Gewinners am Ende beigefügt")
             append("\n")
 
             versionHeader("Version 1.17")

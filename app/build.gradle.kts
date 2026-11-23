@@ -18,8 +18,8 @@ android {
         applicationId = "com.zygonlabs.alleswiegen"
         minSdk = 31
         targetSdk = 36
-        versionCode = 2
-        versionName = "1.17.1"
+        versionCode = 3
+        versionName = "1.18"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

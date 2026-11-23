@@ -187,16 +187,17 @@ fun NFCandBluetoothUI(uiState: GameUiState, viewModel: GameViewModel, liveWeight
 }
 
 @Composable
-fun InnerResultCadd(releventError: Int, releventAbsolutError: Int, player: Player, liveWeight: String, onCaptured: (String) -> Unit, round: Int, landscape: Boolean,inputField: @Composable () -> Unit){
+fun InnerResultCadd(releventError: Int, releventAbsolutError: Int, player: Player, liveWeight: String, onCaptured: (String) -> Unit, round: Int, landscape: Boolean, hidePlacement: Boolean = false, inputField: @Composable () -> Unit){
 
     Column() {
         val textColor=if (releventError>=0) Color(0xFF4CAF50) else MaterialTheme.colorScheme.error
         val headerText=if (round > 1){
+            val positionStr = if (hidePlacement) "" else "${player.position}. "
             if (player.nextErrorMultiplier!=1.0){
-                "${player.position}. ${player.name} (${player.personalTarget}g) - Err Multi ${player.nextErrorMultiplier}"
+                "$positionStr${player.name} (${player.personalTarget}g) - Err Multi ${player.nextErrorMultiplier}"
             }
             else{
-                "${player.position}. ${player.name} (${player.personalTarget}g)"
+                "$positionStr${player.name} (${player.personalTarget}g)"
             }
 
 
@@ -230,8 +231,9 @@ fun InnerResultCadd(releventError: Int, releventAbsolutError: Int, player: Playe
             )
 
         }
+        val errorText = if (hidePlacement) "Fehler $releventError" else "Fehler $releventError / $releventAbsolutError"
         Text(
-            text = "Fehler $releventError / $releventAbsolutError",
+            text = errorText,
             style = MaterialTheme.typography.bodyMedium,
             color = textColor,
             fontWeight = FontWeight.Bold
