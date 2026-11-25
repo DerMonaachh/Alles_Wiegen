@@ -781,11 +781,7 @@ class GameViewModel (private val repository: PlayerScoreRepository) : ViewModel(
 
 
             // Jetzt sortieren wir auch direkt hier für das Ranking
-            val playersSortedByError = updatedPlayers.sortedBy { it.totalError }
-            val rankedPlayers = updatedPlayers.map { player ->
-                val rank = playersSortedByError.indexOfFirst { it.name == player.name } + 1
-                player.copy(position = rank)
-            }
+            val rankedPlayers = updatePositions(updatedPlayers)
 
             if (nextScreen == Screen.RANKING) {
                 playersToSave = rankedPlayers
@@ -810,6 +806,14 @@ class GameViewModel (private val repository: PlayerScoreRepository) : ViewModel(
     }
 
     // Hilfsfunktion, die die Logik berechnet ohne den State direkt zu lesen
+    private fun updatePositions(players: List<Player>): List<Player> {
+        val playersSortedByError = players.sortedBy { it.totalError }
+        return players.map { player ->
+            val rank = playersSortedByError.indexOfFirst { it.name == player.name } + 1
+            player.copy(position = rank)
+        }
+    }
+
     private fun generateInfoText(currentPlayers: List<Player>,targetAmount: Int =0,short: Boolean=false,currentState: GameUiState): Pair<String, Int> {
         val sb = StringBuilder()
         var exxer = 0
@@ -946,12 +950,11 @@ class GameViewModel (private val repository: PlayerScoreRepository) : ViewModel(
 
             // 2. Select players to receive items (max 1 per player, up to itemsProRunde)
             val selectedPlayers = mutableSetOf<String>()
-            val playersToReceive = mutableListOf<Player>()
 
             // Add prioritized player first
             prioritizedPlayers.forEach { p ->
-                if (selectedPlayers.size < itemsCount && selectedPlayers.add(p.name)) {
-                    playersToReceive.add(p)
+                if (selectedPlayers.size < itemsCount) {
+                    selectedPlayers.add(p.name)
                 }
             }
 
@@ -960,7 +963,6 @@ class GameViewModel (private val repository: PlayerScoreRepository) : ViewModel(
             for (p in remainingPlayers) {
                 if (selectedPlayers.size < itemsCount) {
                     selectedPlayers.add(p.name)
-                    playersToReceive.add(p)
                 } else {
                     break
                 }
@@ -968,24 +970,33 @@ class GameViewModel (private val repository: PlayerScoreRepository) : ViewModel(
 
             // 3. Assign items to selected players based on rarity
             // rarity 10 is common, rarity 60 is rare. Weight = 1.0 / rarity
-            val weightedItems = allowedItems.map { it to (it.rarity.coerceAtLeast(1)) }
+            val weightedItems = allowedItems.map { it to (1.0 / it.rarity.coerceAtLeast(1)) }
             val totalWeight = weightedItems.sumOf { it.second }
 
             val updatedPlayers = players.map { player ->
                 if (player.name in selectedPlayers) {
                     var random = Math.random() * totalWeight
-                    var selectedItem = allowedItems.first()
+                    var selectedItem: Item? = allowedItems.first()
                     for ((item, weight) in weightedItems) {
                         random -= weight
                         if (random <= 0) {
                             selectedItem = item
-                            if (player.position==1 && item.id==2){//Blue shell
-                                selectedItem= AvailableItems.items[6]
+                            if (player.position == 1 && item.id == 2) { // Blue shell drawn by 1st place
+                                val alternativeItems = allowedItems.filter { it.id != 2 }
+                                selectedItem = if (alternativeItems.isNotEmpty()) {
+                                    alternativeItems.find { it.id == 6 } ?: alternativeItems.random()
+                                } else {
+                                    null
+                                }
                             }
                             break
                         }
                     }
-                    player.copy(items = player.items + selectedItem)
+                    if (selectedItem != null) {
+                        player.copy(items = player.items + selectedItem)
+                    } else {
+                        player
+                    }
                 } else {
                     player
                 }
@@ -1136,13 +1147,13 @@ class GameViewModel (private val repository: PlayerScoreRepository) : ViewModel(
                 }
 
                 if (nextScreen == Screen.RANKING) {
-                    playersToSave = updatedPlayers
+                    playersToSave = updatePositions(updatedPlayers)
                 }
                 if (nextScreen == Screen.ITEM_HANDLING) {
                     shouldGetItems = true
                 }
                 currentState.copy(
-                    players = updatedPlayers,
+                    players = updatePositions(updatedPlayers),
                     currentScreen = nextScreen,
                     previousScreen = currentState.currentScreen,
                     playerNeedToEx = currentState.playerNeedToEx - 1,

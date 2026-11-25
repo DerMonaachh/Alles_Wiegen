@@ -18,8 +18,8 @@ android {
         applicationId = "com.zygonlabs.alleswiegen"
         minSdk = 31
         targetSdk = 36
-        versionCode = 4
-        versionName = "1.18.1"
+        versionCode = 5
+        versionName = "1.18.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -32,6 +32,9 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            ndk {
+                debugSymbolLevel = "FULL"
+            }
         }
     }
     compileOptions {
