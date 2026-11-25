@@ -30,6 +30,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -97,6 +98,7 @@ import com.example.alleswiegen.components.NfcScannerEffect
 import androidx.core.net.toUri
 import com.example.alleswiegen.GameMode
 
+import com.example.alleswiegen.components.ErrorInfoCard
 import com.example.alleswiegen.components.NFCandBluetoothUI
 import com.example.alleswiegen.components.WeiterOderEnde
 
@@ -217,6 +219,12 @@ fun PlayerWeightingScreen(viewModel: GameViewModel, uiState: GameUiState) {
                         }
                     }
                     WeiterOderEnde(viewModel, currentWeights, allInputsValid, showExitDialog, onExit = { showExitDialog = true })
+                    if (uiState.showUiTips)
+                    {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        ErrorInfoCard()
+                    }
+
 
                 }
                 Spacer(modifier = Modifier.width(8.dp))
@@ -310,6 +318,11 @@ fun PlayerWeightingScreen(viewModel: GameViewModel, uiState: GameUiState) {
             }
 
 
+        }
+        if (uiState.showUiTips)
+        {
+            Spacer(modifier = Modifier.height(8.dp))
+            ErrorInfoCard()
         }
         if (lastErrorInfo.isNotBlank()) {
             Card(
@@ -502,11 +515,21 @@ fun PlayerWeightingScreen(viewModel: GameViewModel, uiState: GameUiState) {
         )
     }
 }
-fun buildLastErrorInfo(player: com.example.alleswiegen.Player,uiState: GameUiState,newValue:Int):String{
-    var lastErrorInfo="${player.name}s letzter Fehler: ${player.upcomingError(newValue)} g"
-    if (uiState.gameMode== GameMode.Items && player.nextErrorMultiplier!=1.0){
+fun buildLastErrorInfo(player: com.example.alleswiegen.Player, uiState: GameUiState, newValue: Int): String {
+    val rawError = player.upcomingError(newValue)
+    fun formatErrorDetail(errorVal: Int): String {
+        val absErr = kotlin.math.abs(errorVal)
+        return when {
+            errorVal > 0 -> "$absErr g zu viel getrunken"
+            errorVal < 0 -> "$absErr g zu wenig getrunken"
+            else -> "0 g"
+        }
+    }
 
-        lastErrorInfo="${player.name}s letzter Fehler: ${player.upcomingError(newValue)} g -> ${player.upcomingError((newValue.toDouble()*player.nextErrorMultiplier).toInt())}"
+    var lastErrorInfo = "${player.name}s letzter Fehler: ${formatErrorDetail(rawError)}"
+    if (uiState.gameMode == GameMode.Items && player.nextErrorMultiplier != 1.0) {
+        val multipliedError = (rawError.toDouble() * player.nextErrorMultiplier).toInt()
+        lastErrorInfo = "${player.name}s letzter Fehler: ${formatErrorDetail(rawError)} -> ${formatErrorDetail(multipliedError)}"
     }
     return lastErrorInfo
 }

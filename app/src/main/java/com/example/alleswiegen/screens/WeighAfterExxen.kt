@@ -206,7 +206,7 @@ fun WeighAfterExxenScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Berechneter Abweichungs-Fehler:",
+                        text = "Fehler:",
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.SemiBold
                     )

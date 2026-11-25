@@ -148,6 +148,7 @@ data class GameUiState(
     val exxer:String="",
     val gameEnds:Boolean=false,
     val bluetoothAddress: String = "AA:BB:CC:DD:EE:FF",
+    val playersSnapshot: List<Player>? = null,
     val SERVICE_UUID: String = "fff0",
     val CHARACTERISTIC_UUID: String = "fff1",
     val lastStoredGameTime: Long = 0,

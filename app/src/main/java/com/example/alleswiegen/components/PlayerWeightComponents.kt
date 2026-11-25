@@ -22,6 +22,8 @@ import androidx.compose.material.icons.filled.Scale
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -259,4 +261,32 @@ fun InnerResultCadd(releventError: Int, releventAbsolutError: Int, player: Playe
         // Rechts: Das Eingabefeld (wird von außen reingereicht)
         inputField() }
 
+}
+
+@Composable
+fun ErrorInfoCard(modifier: Modifier = Modifier) {
+    Card(
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        ),
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(8.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(8.dp)
+        ) {
+            Text(
+                text = "Fehler <0 zu wenig getrunken",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.error,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = "Fehler >0 zu viel getrunken",
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color(0xFF4CAF50),
+                fontWeight = FontWeight.Bold
+            )
+        }
+    }
 }

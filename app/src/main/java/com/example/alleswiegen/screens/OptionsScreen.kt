@@ -329,7 +329,7 @@ fun BluetoothOptions(viewModel: GameViewModel, uiState: GameUiState, context: Co
                                     color = MaterialTheme.colorScheme.onPrimary
                                 )
                                 Spacer(modifier = Modifier.size(8.dp))
-                                Text("Scan Stoppen", style = MaterialTheme.typography.labelMedium)
+                                Text("Scan stoppen", style = MaterialTheme.typography.labelMedium)
                             } else {
                                 Text("Nach Waagen scannen 🔍", style = MaterialTheme.typography.labelMedium)
                             }
@@ -436,7 +436,7 @@ fun BluetoothOptions(viewModel: GameViewModel, uiState: GameUiState, context: Co
                     OutlinedTextField(
                         value = scaleName,
                         onValueChange = { scaleName = it },
-                        label = { Text("Waagen Name") },
+                        label = { Text("Waagen-Name") },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true
                     )
@@ -615,7 +615,7 @@ fun GameOptions(viewModel: GameViewModel, uiState: GameUiState,context: Context)
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = "Platzierung Verbergen",
+                                text = "Platzierung verbergen",
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.SemiBold
                             )
@@ -662,7 +662,7 @@ fun GameOptions(viewModel: GameViewModel, uiState: GameUiState,context: Context)
                                 fontWeight = FontWeight.SemiBold
                             )
                             Text(
-                                text = "Oder Reinfolge beibehalten.",
+                                text = "Oder Reihenfolge beibehalten.",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -1034,7 +1034,7 @@ fun GeneralOptions(viewModel: GameViewModel, uiState: GameUiState) {
                             .clickable { folderPickerLauncher.launch(null) }
                             .padding(vertical = 8.dp)
                     ) {
-                        Text("Bagel Ordner", style = MaterialTheme.typography.titleMedium)
+                        Text("Bagel-Ordner", style = MaterialTheme.typography.titleMedium)
                         Text(
                             text = uiState.jingleLocation.ifEmpty { "Kein Ordner ausgewählt" },
                             style = MaterialTheme.typography.bodySmall,
@@ -1051,7 +1051,7 @@ fun GeneralOptions(viewModel: GameViewModel, uiState: GameUiState) {
                     )
                     Spacer(Modifier.height(8.dp))
                     Text(
-                        text = "App Version 1.18" ,
+                        text = "App-Version 1.18" ,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -1076,7 +1076,7 @@ fun GeneralOptions(viewModel: GameViewModel, uiState: GameUiState) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text("Start-Hinweis anzeigen", style = MaterialTheme.typography.titleMedium)
                             Text(
-                                "Verantwortungsvoll-Meldung beim App-Start",
+                                "Verantwortungs-Hinweis beim App-Start",
                                 style = MaterialTheme.typography.bodySmall
                             )
                         }
@@ -1102,7 +1102,7 @@ fun GeneralOptions(viewModel: GameViewModel, uiState: GameUiState) {
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Spiel Infos, Anleitung & Datenschutz öffnen")
+                        Text("Spiel-Infos, Anleitung & Datenschutz öffnen")
                     }
 
                     Spacer(Modifier.height(16.dp))
@@ -1118,7 +1118,7 @@ fun GeneralOptions(viewModel: GameViewModel, uiState: GameUiState) {
                         onClick = { showDeleteDialog = true },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Alle Einträge löschen.")
+                        Text("Alle Einträge löschen")
                     }
                 }
             }

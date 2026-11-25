@@ -482,6 +482,97 @@ class GameViewModel (private val repository: PlayerScoreRepository) : ViewModel(
         }
     }
 
+    fun canNavigateBack(): Boolean {
+        val state = _uiState.value
+        return when (state.currentScreen) {
+            Screen.SETUP -> false
+            Screen.INITIAL_WEIGHING -> true
+            Screen.SET_TARGET -> true
+            Screen.PlAYER_WEIGHING -> state.currentWeights.isEmpty()
+            Screen.PICK_EXXER -> true
+            Screen.WEIGH_BEFORE_EXXEN -> true
+            Screen.WEIGH_AFTER_EXXEN -> true
+            Screen.SHOW_BEST_AND_WORST -> true
+            Screen.ITEM_HANDLING -> true
+            Screen.OPTIONS -> true
+            Screen.EVENT -> true
+            Screen.ALL_EVENTS -> true
+            Screen.RANKING -> true
+        }
+    }
+
+    fun navigateBack() {
+        val state = _uiState.value
+        if (!canNavigateBack()) return
+
+        _uiState.update { currentState ->
+            when (currentState.currentScreen) {
+                Screen.INITIAL_WEIGHING -> currentState.copy(
+                    currentScreen = Screen.SETUP
+                )
+                Screen.SET_TARGET -> {
+                    // Von Set Target zurück zu Player Weight oder Initial
+                    val snap = currentState.playersSnapshot ?: currentState.players
+                    if (currentState.currentRound == 0) {
+                        currentState.copy(
+                            currentScreen = Screen.INITIAL_WEIGHING,
+                            players = snap
+                        )
+                    } else {
+                        currentState.copy(
+                            currentScreen = Screen.PlAYER_WEIGHING,
+                            players = snap
+                        )
+                    }
+                }
+                Screen.PlAYER_WEIGHING -> currentState.copy(
+                    currentScreen = Screen.SET_TARGET,
+                    currentRound = maxOf(0, currentState.currentRound - 1)
+                )
+                Screen.PICK_EXXER, Screen.SHOW_BEST_AND_WORST, Screen.ITEM_HANDLING -> {
+                    // Zurück zu Player Weight -> Snapshot laden!
+                    val snap = currentState.playersSnapshot ?: currentState.players
+                    currentState.copy(
+                        currentScreen = Screen.PlAYER_WEIGHING,
+                        players = snap
+                    )
+                }
+                Screen.RANKING -> {
+                    // Wenn wir von After Exxen kamen, gehen wir dorthin zurück
+                    if (currentState.previousScreen == Screen.WEIGH_AFTER_EXXEN) {
+                        val snap = currentState.playersSnapshot ?: currentState.players
+                        currentState.copy(
+                            currentScreen = Screen.WEIGH_AFTER_EXXEN,
+                            gameEnds = false,
+                            players = snap
+                        )
+                    } else {
+                        val snap = currentState.playersSnapshot ?: currentState.players
+                        currentState.copy(
+                            currentScreen = Screen.PlAYER_WEIGHING,
+                            gameEnds = false,
+                            players = snap
+                        )
+                    }
+                }
+                Screen.WEIGH_BEFORE_EXXEN -> currentState.copy(
+                    currentScreen = Screen.PICK_EXXER,
+                    exxer = ""
+                )
+                Screen.WEIGH_AFTER_EXXEN -> {
+                    // Zurück zu Before Exxen
+                    currentState.copy(
+                        currentScreen = Screen.WEIGH_BEFORE_EXXEN
+                    )
+                }
+                Screen.OPTIONS, Screen.EVENT, Screen.ALL_EVENTS -> currentState.copy(
+                    currentScreen = currentState.previousScreen
+                )
+                else -> currentState
+            }
+        }
+    }
+
     fun navigateTo(nextScreen: Screen) {
         clearWeights()
         _uiState.update { currentState ->
@@ -511,6 +602,7 @@ class GameViewModel (private val repository: PlayerScoreRepository) : ViewModel(
         val mostDrunkPlayer=getLeaderForNextRound()
         val mostDrunk= mostDrunkPlayer.totalDrunk
         _uiState.update { currentState ->
+            val snap = currentState.players.toList() // Snapshot erstellen
             val newTotalRequest = mostDrunk+targetAmount
             val updatedPlayers = currentState.players.map { player ->
                 player.copy(
@@ -536,7 +628,7 @@ class GameViewModel (private val repository: PlayerScoreRepository) : ViewModel(
                 currentScreen = Screen.PlAYER_WEIGHING,
                 requested = targetAmount,
                 info = infoUpdate,
-
+                playersSnapshot = snap
             )
         }
     }
@@ -750,6 +842,7 @@ class GameViewModel (private val repository: PlayerScoreRepository) : ViewModel(
         var playersToSave: List<Player>? = null
         var shouldGetItems = false
         _uiState.update { currentState ->
+            val snap = currentState.players.toList() // Snapshot erstellen
             val updatedPlayers = currentState.players.map { player ->
                 val oldWeight = player.currentWeight
                 val newWeight = actualWeights[player.name] ?: oldWeight
@@ -796,7 +889,8 @@ class GameViewModel (private val repository: PlayerScoreRepository) : ViewModel(
                 previousScreen = currentState.currentScreen,
                 info = infoUpdate.first,
                 playerNeedToEx = infoUpdate.second,
-                gameEnds = ende
+                gameEnds = ende,
+                playersSnapshot = snap
             )
         }
         if (shouldGetItems) getItems()
@@ -868,7 +962,10 @@ class GameViewModel (private val repository: PlayerScoreRepository) : ViewModel(
     }
     fun pickExxer(name: String) {
         clearWeights()
-        _uiState.update { it.copy(exxer = name, currentScreen = Screen.WEIGH_BEFORE_EXXEN) }
+        _uiState.update { 
+            val snap = it.players.toList() // Snapshot bevor exxer ausgewählt wird, nur zur sicherheit
+            it.copy(exxer = name, currentScreen = Screen.WEIGH_BEFORE_EXXEN, playersSnapshot = snap) 
+        }
     }
     fun GoToNextTarget(){
         _uiState.update { currentState ->

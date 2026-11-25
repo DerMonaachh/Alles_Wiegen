@@ -7,10 +7,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Refresh
+import androidx.activity.compose.BackHandler
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.getValue
@@ -48,6 +50,10 @@ fun AllesWiegenApp(viewModel: GameViewModel = viewModel()) {
     val uiState by viewModel.uiState.collectAsState()
     val uriHandler = LocalUriHandler.current
     viewModel.setTimeFilter(30)
+    
+    BackHandler(enabled = viewModel.canNavigateBack()) {
+        viewModel.navigateBack()
+    }
 
     if (uiState.showStartupMessage && uiState.showStartupDialog) {
         AlertDialog(
@@ -55,7 +61,9 @@ fun AllesWiegenApp(viewModel: GameViewModel = viewModel()) {
             title = { Text("Hinweis") },
             text = {
                 Column {
-                    Text("Nutze die App verantwortungsvoll und trinke nur in moderaten Mengen, auch eine Runde Wasser-Wiegen kann nicht schaden.\nDu findest weitere Infos zu der App in den Optionen (Kompatible Hardware, alle Feature etc). \nDort kannst du auch diese Nachricht deaktivieren.")
+                    Text("Nutze die App verantwortungsvoll und trinke nur in moderaten Mengen – auch eine Runde Wasser-Wiegen zwischendurch kann nicht schaden.\n" +
+                            "Du findest weitere Infos zu der App in den Optionen (kompatible Hardware, alle Features etc.).\n" +
+                            "Dort kannst du auch diese Nachricht deaktivieren.")
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
                         text = "📖 Spieleanleitung online öffnen",
@@ -80,6 +88,16 @@ fun AllesWiegenApp(viewModel: GameViewModel = viewModel()) {
         topBar = {
             CenterAlignedTopAppBar(
                 title = { Text("Alles Wiegen", fontWeight = FontWeight.Bold) },
+                navigationIcon = {
+                    if (viewModel.canNavigateBack()) {
+                        IconButton(onClick = { viewModel.navigateBack() }) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Zurück"
+                            )
+                        }
+                    }
+                },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer
                 )

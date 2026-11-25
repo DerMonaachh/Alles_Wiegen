@@ -354,7 +354,7 @@ fun EvaluationGraphDialog(
                                 ) {
                                     Text("🥯", fontSize = 12.sp)
                                     Text(
-                                        text = "= Exx/Bagel",
+                                        text = "=Bagel",
                                         style = MaterialTheme.typography.labelSmall,
                                         color = MaterialTheme.colorScheme.secondary
                                     )
