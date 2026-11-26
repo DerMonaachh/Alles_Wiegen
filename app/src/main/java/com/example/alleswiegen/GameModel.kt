@@ -85,18 +85,17 @@ data class PlayerScoreEntry(
 
 
 )*/
-enum class ItemDistro(val displayName: String) {
-    letzer("Rubberband"),
-    erster("Bleib Unten!"),
-    runden_erster("Runden Erster"),
-    runden_letzter("Runden Letzter"),
-    gleichmasig("Gleichheit");
-
-
+enum class ItemDistro(val displayName: String, val description: String) {
+    letzer("Rubberband", "Der Spieler auf dem letzten Platz erhält bevorzugt ein Item."),
+    erster("Bleib Unten!", "Der Spieler auf dem ersten Platz erhält bevorzugt ein Item."),
+    runden_erster("Runden Erster", "Der Spieler mit dem besten Ergebnis der Runde erhält bevorzugt ein Item."),
+    runden_letzter("Runden Letzter", "Der Spieler mit dem schlechtesten Ergebnis der Runde erhält bevorzugt ein Item."),
+    gleichmasig("Gleichheit", "Items werden komplett zufällig verteilt.");
 
     // Hilfsfunktion, um eine Liste für das Dropdown zu bekommen
     companion object {
         fun getDisplayNames() = entries.map { it.displayName }
+        fun getDescription(displayName: String) = entries.find { it.displayName == displayName }?.description ?: ""
     }
 }
 
@@ -160,6 +159,7 @@ data class GameUiState(
     val showStartupMessage: Boolean = true,
     val showStartupDialog: Boolean = true,
     val showUiTips: Boolean = true,
+    val showTutorialOverlay: Boolean = true,
     val isServerRunning: Boolean = false,
     val isScanningBluetooth: Boolean = false,
     val discoveredBluetoothDevices: List<DiscoveredBluetoothDevice> = emptyList(),

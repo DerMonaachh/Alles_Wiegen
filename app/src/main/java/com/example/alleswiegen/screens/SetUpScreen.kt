@@ -355,6 +355,15 @@ fun SetupScreen(viewModel: GameViewModel, uiState: GameUiState) {
                             }
                         }
 
+                        // Erklärung zum ausgewählten Verteilungsmodus anzeigen
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            text = ItemDistro.getDescription(uiState.itemVerteilung),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
+                            modifier = Modifier.padding(horizontal = 4.dp)
+                        )
+
                         Spacer(Modifier.height(8.dp))
 
                         OutlinedTextField(

@@ -43,16 +43,24 @@ import com.example.alleswiegen.screens.SetTargetScreen
 import com.example.alleswiegen.screens.TBDScreen
 import com.example.alleswiegen.screens.WeighAfterExxenScreen
 import com.example.alleswiegen.screens.WeighBeforeExxenScreen
+import com.example.alleswiegen.components.QuickStartGuideDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AllesWiegenApp(viewModel: GameViewModel = viewModel()) {
     val uiState by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
     val uriHandler = LocalUriHandler.current
+    var showQuickStartGuide by remember { mutableStateOf(false) }
+
     viewModel.setTimeFilter(30)
     
     BackHandler(enabled = viewModel.canNavigateBack()) {
         viewModel.navigateBack()
+    }
+
+    if (showQuickStartGuide) {
+        QuickStartGuideDialog(onDismiss = { showQuickStartGuide = false })
     }
 
     if (uiState.showStartupMessage && uiState.showStartupDialog) {
@@ -66,12 +74,20 @@ fun AllesWiegenApp(viewModel: GameViewModel = viewModel()) {
                             "Dort kannst du auch diese Nachricht deaktivieren.")
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
-                        text = "📖 Spieleanleitung online öffnen",
+                        text = "🚀 Quick-Start Guide öffnen",
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.clickable {
+                            showQuickStartGuide = true
+                        }.padding(vertical = 4.dp)
+                    )
+                    Text(
+                        text = "📖 Ausführliche Spieleanleitung online",
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.clickable {
                             uriHandler.openUri("https://zygon-labs.github.io/alles-wiegen/")
-                        }
+                        }.padding(vertical = 4.dp)
                     )
                 }
             },
@@ -80,7 +96,14 @@ fun AllesWiegenApp(viewModel: GameViewModel = viewModel()) {
                     Text("OK")
                 }
             },
-
+            dismissButton = {
+                TextButton(onClick = {
+                    viewModel.toggleStartupMessage(false, context)
+                    viewModel.dismissStartupDialog()
+                }) {
+                    Text("Nicht mehr anzeigen")
+                }
+            }
         )
     }
 

@@ -70,6 +70,7 @@ import androidx.compose.foundation.verticalScroll
 import com.example.alleswiegen.GameUiState
 import com.example.alleswiegen.GameViewModel
 import com.example.alleswiegen.Screen
+import com.example.alleswiegen.components.QuickStartGuideDialog
 
 @Composable
 fun OptionsScreen(viewModel: GameViewModel, uiState: GameUiState) {
@@ -77,7 +78,11 @@ fun OptionsScreen(viewModel: GameViewModel, uiState: GameUiState) {
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     val tabTitles = listOf("Bluetooth", "Spiel", "Items", "Allgemeines")
     val context = LocalContext.current
+    var showQuickStartGuide by remember { mutableStateOf(false) }
 
+    if (showQuickStartGuide) {
+        QuickStartGuideDialog(onDismiss = { showQuickStartGuide = false })
+    }
 
     Column(modifier = Modifier.fillMaxSize()) {
         // Die Material 3 Scrollable Tab-Leiste
@@ -112,7 +117,7 @@ fun OptionsScreen(viewModel: GameViewModel, uiState: GameUiState) {
                 0 -> BluetoothOptions(viewModel, uiState, context)
                 1 -> GameOptions(viewModel, uiState, context)
                 2 -> ItemOverview(viewModel, uiState, context)
-                3 -> GeneralOptions(viewModel, uiState)
+                3 -> GeneralOptions(viewModel, uiState, onOpenQuickStart = { showQuickStartGuide = true })
             }
         }
         
@@ -907,7 +912,7 @@ private fun ErrorPointRow(
 }
 
 @Composable
-fun GeneralOptions(viewModel: GameViewModel, uiState: GameUiState) {
+fun GeneralOptions(viewModel: GameViewModel, uiState: GameUiState, onOpenQuickStart: () -> Unit) {
     val context = LocalContext.current
     var showDeleteDialog by remember { mutableStateOf(false) }
     var showPatchNotesDialog by remember { mutableStateOf(false) }
@@ -1086,6 +1091,29 @@ fun GeneralOptions(viewModel: GameViewModel, uiState: GameUiState) {
                         )
                     }
 
+                    // --- TUTORIAL OVERLAY TOGGLE ---
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(8.dp))
+                            .clickable { viewModel.toggleTutorialOverlay(!uiState.showTutorialOverlay, context) }
+                            .padding(vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("Tutorial-Hilfen (Erstes Spiel)", style = MaterialTheme.typography.titleMedium)
+                            Text(
+                                "Anzeigen von 'Hier klicken'-Hinweisen im Spiel",
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
+                        Switch(
+                            checked = uiState.showTutorialOverlay,
+                            onCheckedChange = null
+                        )
+                    }
+
                     Spacer(Modifier.height(16.dp))
                     HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), thickness = 0.5.dp)
                     Text(
@@ -1095,6 +1123,12 @@ fun GeneralOptions(viewModel: GameViewModel, uiState: GameUiState) {
                         color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.padding(bottom = 12.dp)
                     )
+                    Button(
+                        onClick = onOpenQuickStart,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Quick-Start Guide öffnen")
+                    }
                     Button(
                         onClick = {
                             val intent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://zygon-labs.github.io/alles-wiegen/"))

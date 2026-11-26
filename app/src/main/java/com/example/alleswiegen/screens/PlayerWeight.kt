@@ -101,6 +101,7 @@ import com.example.alleswiegen.GameMode
 import com.example.alleswiegen.components.ErrorInfoCard
 import com.example.alleswiegen.components.NFCandBluetoothUI
 import com.example.alleswiegen.components.WeiterOderEnde
+import com.example.alleswiegen.components.TutorialHighlightBox
 
 import kotlin.text.isNotEmpty
 import kotlin.text.lowercase
@@ -189,6 +190,14 @@ fun PlayerWeightingScreen(viewModel: GameViewModel, uiState: GameUiState) {
                         NFCandBluetoothUI(uiState, viewModel, liveWeight, detectedPlayer)
                     }
 
+                    if (uiState.showTutorialOverlay) {
+                        TutorialHighlightBox(
+                            text = "Hier das neue Gewicht nach dem Trinken eintragen. Ziel ist es, möglichst genau das persöhnliche Ziel (Zahl in den Klammern) zu erreichen." +
+                                    "Wenn du ein kompatible Waage und NFC verwendest, musst du nur den Chip Scannen und das Getränk abstellen andernfalls, nutze den Button oder gib das Gewicht per Hand ein.",
+                            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+                        )
+                    }
+
                     if (lastErrorInfo.isNotBlank()) {
                         Card(
                             colors = CardDefaults.cardColors(
@@ -218,7 +227,7 @@ fun PlayerWeightingScreen(viewModel: GameViewModel, uiState: GameUiState) {
                             }
                         }
                     }
-                    WeiterOderEnde(viewModel, currentWeights, allInputsValid, showExitDialog, onExit = { showExitDialog = true })
+                    WeiterOderEnde(viewModel, currentWeights, allInputsValid, showExitDialog, onExit = { showExitDialog = true }, context)
                     if (uiState.showUiTips)
                     {
                         Spacer(modifier = Modifier.height(8.dp))
@@ -304,6 +313,14 @@ fun PlayerWeightingScreen(viewModel: GameViewModel, uiState: GameUiState) {
 // --- UI: KOMBINIERTE SCANNER CARD ---
             NFCandBluetoothUI(uiState, viewModel, liveWeight, detectedPlayer)
         }
+
+        if (uiState.showTutorialOverlay) {
+            TutorialHighlightBox(
+                text = "Hier das neue Gewicht nach dem Trinken eintragen. Ziel ist es, möglichst genau die Ziel-Menge zu erreichen.",
+                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+            )
+        }
+
         else{
 
             Button(onClick = {
@@ -427,7 +444,7 @@ fun PlayerWeightingScreen(viewModel: GameViewModel, uiState: GameUiState) {
 
         }
 
-        WeiterOderEnde(viewModel, currentWeights, allInputsValid, showExitDialog, onExit = { showExitDialog = true })
+        WeiterOderEnde(viewModel, currentWeights, allInputsValid, showExitDialog, onExit = { showExitDialog = true }, context)
     }
     }
     }
@@ -501,7 +518,7 @@ fun PlayerWeightingScreen(viewModel: GameViewModel, uiState: GameUiState) {
                     onClick = {
                         showExitDialog = false
                         val weightMap = currentWeights.mapValues { it.value.toIntOrNull() ?: 0 }
-                        viewModel.enterPlayerWeights(weightMap, true)
+                        viewModel.enterPlayerWeights(weightMap, true, context)
                     }
                 ) {
                     Text("Beenden", fontWeight = FontWeight.Bold)

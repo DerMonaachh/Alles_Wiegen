@@ -42,13 +42,13 @@ import com.example.alleswiegen.GameUiState
 import com.example.alleswiegen.GameViewModel
 import com.example.alleswiegen.Player
 @Composable
-fun WeiterOderEnde(viewModel: GameViewModel,currentWeights: Map<String, String>, allInputsValid: Boolean, showExitDialog: Boolean, onExit: () -> Unit){
+fun WeiterOderEnde(viewModel: GameViewModel,currentWeights: Map<String, String>, allInputsValid: Boolean, showExitDialog: Boolean, onExit: () -> Unit, context: android.content.Context){
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         Button(
             onClick = {
                 val weightMap = currentWeights.mapValues { it.value.toIntOrNull() ?: 0 }
                 viewModel.onNfcTagDetected("")
-                viewModel.enterPlayerWeights(weightMap, false)
+                viewModel.enterPlayerWeights(weightMap, false, context)
             },
             modifier = Modifier.weight(1f),
             enabled = allInputsValid // HIER AKTIVIERT

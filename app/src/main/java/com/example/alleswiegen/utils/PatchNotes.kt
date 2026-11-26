@@ -14,7 +14,13 @@ object PatchNotes {
             withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, fontSize = 20.sp)) {
                 append("Patch Notes\n\n")
             }
+            append("\n")
 
+            versionHeader("Version 1.19")
+            bulletPoint("Quick-Start Guide eingeführt")
+            bulletPoint("Zurück Funktion")
+            bulletPoint("Probleme mit dem Lokal Server überarbeitet")
+            bulletPoint("Fehler bei der Item Zuteilung behoben")
 
             append("\n")
 

@@ -632,9 +632,19 @@ class GameViewModel (private val repository: PlayerScoreRepository) : ViewModel(
             )
         }
     }
-    fun stroePlayerScoreAtGameEnd(playersToStore: List<Player>){
+    fun stroePlayerScoreAtGameEnd(playersToStore: List<Player>, context: android.content.Context? = null){
         val time : Long = System.currentTimeMillis()
         _uiState.update { it.copy(lastStoredGameTime = time) }
+
+        // Deaktivieren des Tutorial-Overlays, sobald ein Spiel beendet wurde
+        if (uiState.value.showTutorialOverlay) {
+            _uiState.update { it.copy(showTutorialOverlay = false) }
+            context?.let { ctx ->
+                val prefs = ctx.getSharedPreferences("AllesWiegenPrefs", android.content.Context.MODE_PRIVATE)
+                prefs.edit().putString("show_tutorial_overlay", "false").apply()
+            }
+        }
+
         playersToStore.forEach { player ->
             println("Store Data for ${player.name} at time ${time}")
             val score= PlayerScoreEntry(name=player.name,
@@ -838,7 +848,7 @@ class GameViewModel (private val repository: PlayerScoreRepository) : ViewModel(
             )
         }
     }
-    fun enterPlayerWeights(actualWeights: Map<String, Int>, ende: Boolean) {
+    fun enterPlayerWeights(actualWeights: Map<String, Int>, ende: Boolean, context: android.content.Context? = null) {
         var playersToSave: List<Player>? = null
         var shouldGetItems = false
         _uiState.update { currentState ->
@@ -895,7 +905,7 @@ class GameViewModel (private val repository: PlayerScoreRepository) : ViewModel(
         }
         if (shouldGetItems) getItems()
         playersToSave?.let {
-            stroePlayerScoreAtGameEnd(it)
+            stroePlayerScoreAtGameEnd(it, context)
         }
     }
 
@@ -1362,6 +1372,7 @@ class GameViewModel (private val repository: PlayerScoreRepository) : ViewModel(
         val jingleLocation = prefs.getString("jingleLocation", "") ?: ""
         val showStartupMessage = (prefs.getString("show_startup_message", "true") ?: "true").toBoolean()
         val showUiTips = (prefs.getString("show_ui_tips", "true") ?: "true").toBoolean()
+        val showTutorialOverlay = (prefs.getString("show_tutorial_overlay", "true") ?: "true").toBoolean()
         val sortByRank = (prefs.getString("sort_by_rank", "false") ?: "false").toBoolean()
         val hidePlacement = (prefs.getString("hide_placement", "false") ?: "false").toBoolean()
 
@@ -1391,6 +1402,7 @@ class GameViewModel (private val repository: PlayerScoreRepository) : ViewModel(
             showStartupMessage = showStartupMessage,
             showStartupDialog = showStartupMessage,
             showUiTips = showUiTips,
+            showTutorialOverlay = showTutorialOverlay,
             sortByRank = sortByRank,
             hidePlacement = hidePlacement,
             itemOverrides = itemOverrides,
@@ -1410,6 +1422,14 @@ class GameViewModel (private val repository: PlayerScoreRepository) : ViewModel(
         val prefs = context.getSharedPreferences("AllesWiegenPrefs", Context.MODE_PRIVATE)
         prefs.edit {
             putString("show_ui_tips", enabled.toString())
+        }
+    }
+
+    fun toggleTutorialOverlay(enabled: Boolean, context: Context) {
+        _uiState.update { it.copy(showTutorialOverlay = enabled) }
+        val prefs = context.getSharedPreferences("AllesWiegenPrefs", Context.MODE_PRIVATE)
+        prefs.edit {
+            putString("show_tutorial_overlay", enabled.toString())
         }
     }
 

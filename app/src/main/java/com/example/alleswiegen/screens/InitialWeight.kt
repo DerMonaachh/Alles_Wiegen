@@ -48,11 +48,18 @@ import com.example.alleswiegen.GameUiState
 import com.example.alleswiegen.GameViewModel
 import kotlin.collections.set
 import kotlin.text.toDoubleOrNull
+import androidx.compose.foundation.text.InlineTextContent
+import androidx.compose.foundation.text.appendInlineContent
+import androidx.compose.ui.text.Placeholder
+import androidx.compose.ui.text.PlaceholderVerticalAlign
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.unit.sp
 import com.example.alleswiegen.components.NfcScannerEffect
-import  com.example.alleswiegen.components.HapticHelper
+import com.example.alleswiegen.components.HapticHelper
 import com.example.alleswiegen.components.InitialNFCCommunication
 import com.example.alleswiegen.components.InitialWeightTask
 import com.example.alleswiegen.components.PlayerInitalWeightCard
+import com.example.alleswiegen.components.TutorialHighlightBox
 
 @Composable
 fun InitialWeighingScreen(viewModel: GameViewModel, uiState: GameUiState) {
@@ -130,6 +137,31 @@ fun InitialWeighingScreen(viewModel: GameViewModel, uiState: GameUiState) {
         }*/
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
+    val tutorialAnnotatedText = remember {
+        buildAnnotatedString {
+            append("Hier das Startgewicht der vollen Getränke eintragen (manuell oder per Klick auf das Waagen-Symbol ")
+            appendInlineContent("scaleIcon", "[Waage]")
+            append(" bei verbundener Waage ggf. vorher den jeweiligen NFC Chips scannen).")
+        }
+    }
+    val tutorialInlineContent = remember {
+        mapOf(
+            "scaleIcon" to InlineTextContent(
+                Placeholder(
+                    width = 20.sp,
+                    height = 20.sp,
+                    placeholderVerticalAlign = PlaceholderVerticalAlign.Center
+                )
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Scale,
+                    contentDescription = "Waage",
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+            }
+        )
+    }
+
     if (isLandscape) {
         Row(modifier = Modifier
             .fillMaxSize()
@@ -138,6 +170,14 @@ fun InitialWeighingScreen(viewModel: GameViewModel, uiState: GameUiState) {
                 .weight(0.3f)
                 .padding(16.dp)) {
                 InitialWeightTask()
+                
+                if (uiState.showTutorialOverlay) {
+                    TutorialHighlightBox(
+                        annotatedText = tutorialAnnotatedText,
+                        inlineContent = tutorialInlineContent,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -177,6 +217,14 @@ fun InitialWeighingScreen(viewModel: GameViewModel, uiState: GameUiState) {
     ) {
         // --- Header Bereich ---
         InitialWeightTask()
+
+        if (uiState.showTutorialOverlay) {
+            TutorialHighlightBox(
+                annotatedText = tutorialAnnotatedText,
+                inlineContent = tutorialInlineContent,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
