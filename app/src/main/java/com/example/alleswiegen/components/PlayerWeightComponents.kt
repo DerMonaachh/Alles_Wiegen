@@ -189,7 +189,7 @@ fun NFCandBluetoothUI(uiState: GameUiState, viewModel: GameViewModel, liveWeight
 }
 
 @Composable
-fun InnerResultCadd(releventError: Int, releventAbsolutError: Int, player: Player, liveWeight: String, onCaptured: (String) -> Unit, round: Int, landscape: Boolean, hidePlacement: Boolean = false, inputField: @Composable () -> Unit){
+fun InnerResultCadd(releventError: Int, releventAbsolutError: Int, player: Player, liveWeight: String, onCaptured: (String) -> Unit, round: Int, landscape: Boolean, hidePlacement: Boolean = false, inputField: @Composable () -> Unit, showScaleButton: Boolean = true){
 
     Column() {
         val textColor=if (releventError>=0) Color(0xFF4CAF50) else MaterialTheme.colorScheme.error
@@ -248,15 +248,20 @@ fun InnerResultCadd(releventError: Int, releventAbsolutError: Int, player: Playe
     Row(modifier = Modifier
         .padding(2.dp)
         .fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically) {IconButton(
-        onClick = { onCaptured(liveWeight) },
-        colors = IconButtonDefaults.filledIconButtonColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
-        ),
-        modifier = Modifier.padding(horizontal = 8.dp)
-    ) {
-        Icon(Icons.Default.Scale, contentDescription = "Wert von Waage übernehmen")
-    }
+        verticalAlignment = Alignment.CenterVertically) {
+        if (showScaleButton) {
+            IconButton(
+                onClick = { onCaptured(liveWeight) },
+                colors = IconButtonDefaults.filledIconButtonColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+                ),
+                modifier = Modifier.padding(horizontal = 8.dp)
+            ) {
+                Icon(Icons.Default.Scale, contentDescription = "Wert von Waage übernehmen")
+            }
+        } else {
+            Spacer(modifier = Modifier.padding(horizontal = 8.dp))
+        }
 
         // Rechts: Das Eingabefeld (wird von außen reingereicht)
         inputField() }

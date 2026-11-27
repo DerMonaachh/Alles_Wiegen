@@ -43,7 +43,7 @@ fun PlayerResultCard(player: Player,
     val releventError=if (enteredValue==""){
         player.lastError
     }else{
-        player.upcomingError(enteredValue.toDouble())
+        player.upcomingError(enteredValue.toDoubleOrNull() ?: 0.0)
     }
     val backgroundColor = when {
         releventError > 0 -> Color(0xFFFFF1AC)
@@ -164,17 +164,18 @@ fun PlayerResultCard(
     inputField: @Composable () -> Unit,
     modifier: Modifier = Modifier,
     landscape: Boolean=false,
-    hidePlacement: Boolean = false
+    hidePlacement: Boolean = false,
+    showScaleButton: Boolean = true
 ) {
     val releventError=if (enteredValue==""){
         player.lastError
     }else{
-        (player.upcomingError(enteredValue.toInt()).toDouble()*player.nextErrorMultiplier).toInt()
+        (player.upcomingError(enteredValue.toIntOrNull() ?: 0).toDouble()*player.nextErrorMultiplier).toInt()
     }
     val releventAbsolutError=if (enteredValue==""){
         player.totalError
     }else{
-        (abs(player.upcomingError(enteredValue.toInt()))*player.nextErrorMultiplier).toInt()+player.totalError
+        (abs(player.upcomingError(enteredValue.toIntOrNull() ?: 0))*player.nextErrorMultiplier).toInt()+player.totalError
     }
     Card(
         modifier = modifier.fillMaxWidth(),
@@ -196,7 +197,7 @@ fun PlayerResultCard(
                 horizontalArrangement = Arrangement.Center
             ) {
                 Spacer(modifier= Modifier.width(10.dp))
-                InnerResultCadd(releventError, releventAbsolutError, player, liveWeight, onCaptured, round, landscape, hidePlacement, inputField)
+                InnerResultCadd(releventError, releventAbsolutError, player, liveWeight, onCaptured, round, landscape, hidePlacement, inputField, showScaleButton)
 
             }
 

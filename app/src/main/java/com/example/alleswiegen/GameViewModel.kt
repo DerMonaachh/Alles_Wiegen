@@ -118,7 +118,7 @@ class GameViewModel (private val repository: PlayerScoreRepository) : ViewModel(
     private val bluetoothAdapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
     private val webServer = LocalWebServer()
 
-    var liveWeight by mutableStateOf("0.0")
+    var liveWeight by mutableStateOf("0")
         private set
     var rawDataString by mutableStateOf("")
         private set
@@ -233,10 +233,11 @@ class GameViewModel (private val repository: PlayerScoreRepository) : ViewModel(
     fun updateLiveWeight(data: String) {
         val cleaned = data.filter { it.isDigit() || it == '.' || it == '-' }
         if (cleaned.isNotEmpty()) {
-            liveWeight = cleaned
+            val intWeightStr = cleaned.toDoubleOrNull()?.toInt()?.toString() ?: cleaned
+            liveWeight = intWeightStr
             // Wenn ein Spieler gerade aktiv gewogen wird, aktualisiere dessen Wert im UI State
             _uiState.value.activeBluetoothPlayer?.let { playerName ->
-                updatePlayerWeightInput(playerName, cleaned)
+                updatePlayerWeightInput(playerName, intWeightStr)
             }
         }
     }
@@ -900,7 +901,8 @@ class GameViewModel (private val repository: PlayerScoreRepository) : ViewModel(
                 info = infoUpdate.first,
                 playerNeedToEx = infoUpdate.second,
                 gameEnds = ende,
-                playersSnapshot = snap
+                playersSnapshot = snap,
+                currentWeights = emptyMap()
             )
         }
         if (shouldGetItems) getItems()

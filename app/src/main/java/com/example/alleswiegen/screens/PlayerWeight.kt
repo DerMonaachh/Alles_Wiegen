@@ -161,8 +161,8 @@ fun PlayerWeightingScreen(viewModel: GameViewModel, uiState: GameUiState) {
                     if (uiState.vibrate){
                         hapticHelper.vibrate(50) // Kurz vibrieren
                     }
-                    lastErrorInfo=buildLastErrorInfo(detectedPlayer,uiState,liveWeight.toInt())
-                    if (detectedPlayer.upcomingError(liveWeight.toIntOrNull() ?: 0) == 0 && uiState.showJingle) {
+                    lastErrorInfo=buildLastErrorInfo(detectedPlayer,uiState,weightValue)
+                    if (detectedPlayer.upcomingError(weightValue) == 0 && uiState.showJingle) {
                         showCelebrationVideo = true
                     }
                     Toast.makeText(
@@ -257,11 +257,12 @@ fun PlayerWeightingScreen(viewModel: GameViewModel, uiState: GameUiState) {
                                 enteredValue = weightStr,
                                 isError = isError, // Reiche den Fehlerstatus an die Card weiter
                                 hidePlacement = uiState.hidePlacement,
+                                showScaleButton = uiState.isBluetoothConnected,
                                 onCaptured = { value ->
                                     //currentWeights[player.name] = value
                                     viewModel.updateWeight(value, player.name)
                                     viewModel.onNfcTagDetected("")
-                                    lastErrorInfo=buildLastErrorInfo(player,uiState,value.toInt())
+                                    lastErrorInfo=buildLastErrorInfo(player,uiState,value.toIntOrNull() ?: 0)
                                     if (player.upcomingError(value.toIntOrNull() ?: 0) == 0 && uiState.showJingle) {
                                         showCelebrationVideo = true
                                     }
@@ -404,11 +405,12 @@ fun PlayerWeightingScreen(viewModel: GameViewModel, uiState: GameUiState) {
                             enteredValue = weightStr,
                             isError = isError, // Reiche den Fehlerstatus an die Card weiter
                             hidePlacement = uiState.hidePlacement,
+                            showScaleButton = uiState.isBluetoothConnected,
                             onCaptured = { value ->
                                 //currentWeights[player.name] = value
                                 viewModel.updateWeight(value, player.name)
                                 viewModel.onNfcTagDetected("")
-                                lastErrorInfo=buildLastErrorInfo(player,uiState,value.toInt())
+                                lastErrorInfo=buildLastErrorInfo(player,uiState,value.toIntOrNull() ?: 0)
 
                                 if (player.upcomingError(value.toIntOrNull() ?: 0) == 0 && uiState.showJingle) {
                                     showCelebrationVideo = true
